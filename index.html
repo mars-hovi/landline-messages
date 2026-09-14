@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leave a message</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #faf7f2;
+    --card: #ffffff;
+    --ink: #2b2620;
+    --muted: #8a8070;
+    --accent: #d4572c;
+    --accent-dark: #b8471f;
+    --ring: #f0e8dc;
+    --danger: #c0392b;
+    --ok: #3f7d4f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+  .card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--card);
+    border-radius: 24px;
+    padding: 36px 28px 32px;
+    box-shadow: 0 10px 40px rgba(60, 40, 20, 0.08);
+    text-align: center;
+  }
+  h1 {
+    font-size: 1.5rem;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 0.95rem;
+    margin: 0 0 32px;
+    line-height: 1.4;
+  }
+  .stage {
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+  }
+  .record-btn {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease, background 0.15s ease;
+    box-shadow: 0 6px 20px rgba(212, 87, 44, 0.35);
+  }
+  .record-btn:hover { background: var(--accent-dark); transform: scale(1.03); }
+  .record-btn:active { transform: scale(0.97); }
+  .record-btn svg { width: 40px; height: 40px; }
+
+  .stop-btn {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: none;
+    background: var(--danger);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 8px rgba(192, 57, 43, 0.12);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  .stop-btn .sq { width: 30px; height: 30px; background: white; border-radius: 6px; }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 8px rgba(192, 57, 43, 0.12); }
+    50% { box-shadow: 0 0 0 16px rgba(192, 57, 43, 0.05); }
+  }
+
+  .timer {
+    font-variant-numeric: tabular-nums;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .hint { color: var(--muted); font-size: 0.9rem; }
+
+  audio { width: 100%; margin: 4px 0 6px; }
+
+  .row { display: flex; gap: 10px; width: 100%; }
+  .btn {
+    flex: 1;
+    padding: 14px 12px;
+    border-radius: 14px;
+    border: none;
+    font-size: 0.98rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent-dark); }
+  .btn-secondary { background: var(--ring); color: var(--ink); }
+  .btn-secondary:hover { background: #e6dccb; }
+  .btn:disabled { opacity: 0.5; cursor: default; }
+
+  .status { font-size: 0.95rem; color: var(--muted); min-height: 1.2em; }
+  .status.error { color: var(--danger); }
+  .status.ok { color: var(--ok); }
+
+  .done-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: #eaf5ec; display: flex; align-items: center; justify-content: center;
+  }
+  .done-icon svg { width: 30px; height: 30px; color: var(--ok); }
+
+  footer {
+    margin-top: 24px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    max-width: 420px;
+    text-align: center;
+    padding: 0 12px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1916;
+      --card: #262220;
+      --ink: #f2ece2;
+      --muted: #9c9184;
+      --ring: #35302b;
+    }
+    .card { box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>Leave a message 📞</h1>
+    <p class="sub">Record a quick voice message. It'll get added to the rotation and might play when the phone rings.</p>
+
+    <div class="stage" id="stage">
+      <!-- filled in by JS -->
+    </div>
+
+    <p class="status" id="status"></p>
+  </div>
+  <footer>Recordings are sent straight through — no review, no takebacks once sent 🙂</footer>
+
+<script>
+(function () {
+  // ---- Fill these in once the Supabase project exists ----
+  const SUPABASE_URL = "https://gwnvhgilayzjzkimvmcr.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_NgslFznczZJ3TP4W9K3C_A_521vw2GP";
+  const BUCKET = "messages";
+  // ----------------------------------------------------------
+
+  const stage = document.getElementById("stage");
+  const statusEl = document.getElementById("status");
+
+  let mediaRecorder = null;
+  let chunks = [];
+  let mimeType = "";
+  let stream = null;
+  let recordedBlob = null;
+  let timerInterval = null;
+  let startTime = 0;
+
+  function setStatus(text, kind) {
+    statusEl.textContent = text || "";
+    statusEl.className = "status" + (kind ? " " + kind : "");
+  }
+
+  function pickMimeType() {
+    const candidates = [
+      "audio/mp4",
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/ogg;codecs=opus",
+    ];
+    for (const c of candidates) {
+      if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(c)) {
+        return c;
+      }
+    }
+    return "";
+  }
+
+  function fmtTime(sec) {
+    const m = Math.floor(sec / 60).toString().padStart(2, "0");
+    const s = Math.floor(sec % 60).toString().padStart(2, "0");
+    return m + ":" + s;
+  }
+
+  function renderIdle() {
+    recordedBlob = null;
+    setStatus("");
+    stage.innerHTML = "";
+
+    const btn = document.createElement("button");
+    btn.className = "record-btn";
+    btn.setAttribute("aria-label", "Start recording");
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="9"/></svg>';
+    btn.onclick = startRecording;
+
+    const hint = document.createElement("div");
+    hint.className = "hint";
+    hint.textContent = "Tap to start recording";
+
+    stage.appendChild(btn);
+    stage.appendChild(hint);
+  }
+
+  function renderRecording() {
+    stage.innerHTML = "";
+
+    const btn = document.createElement("button");
+    btn.className = "stop-btn";
+    btn.setAttribute("aria-label", "Stop recording");
+    btn.innerHTML = '<span class="sq"></span>';
+    btn.onclick = stopRecording;
+
+    const timer = document.createElement("div");
+    timer.className = "timer";
+    timer.id = "timerDisplay";
+    timer.textContent = "00:00";
+
+    const hint = document.createElement("div");
+    hint.className = "hint";
+    hint.textContent = "Recording... tap to stop";
+
+    stage.appendChild(btn);
+    stage.appendChild(timer);
+    stage.appendChild(hint);
+
+    startTime = Date.now();
+    timerInterval = setInterval(() => {
+      const el = document.getElementById("timerDisplay");
+      if (el) el.textContent = fmtTime((Date.now() - startTime) / 1000);
+    }, 250);
+  }
+
+  function renderPreview() {
+    stage.innerHTML = "";
+    setStatus("");
+
+    const url = URL.createObjectURL(recordedBlob);
+    const audio = document.createElement("audio");
+    audio.controls = true;
+    audio.src = url;
+
+    const row = document.createElement("div");
+    row.className = "row";
+
+    const discardBtn = document.createElement("button");
+    discardBtn.className = "btn btn-secondary";
+    discardBtn.textContent = "Discard";
+    discardBtn.onclick = renderIdle;
+
+    const sendBtn = document.createElement("button");
+    sendBtn.className = "btn btn-primary";
+    sendBtn.textContent = "Send it";
+    sendBtn.onclick = sendRecording;
+
+    row.appendChild(discardBtn);
+    row.appendChild(sendBtn);
+
+    const hint = document.createElement("div");
+    hint.className = "hint";
+    hint.textContent = "Give it a listen, then send or record again";
+
+    stage.appendChild(audio);
+    stage.appendChild(row);
+    stage.appendChild(hint);
+  }
+
+  function renderSending() {
+    stage.querySelectorAll(".btn").forEach((b) => (b.disabled = true));
+    setStatus("Sending...");
+  }
+
+  function renderSent() {
+    stage.innerHTML = "";
+    setStatus("");
+
+    const icon = document.createElement("div");
+    icon.className = "done-icon";
+    icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+    const msg = document.createElement("div");
+    msg.textContent = "Sent! Thanks for the message.";
+    msg.style.fontWeight = "600";
+
+    const again = document.createElement("button");
+    again.className = "btn btn-secondary";
+    again.style.marginTop = "8px";
+    again.textContent = "Record another";
+    again.onclick = renderIdle;
+
+    stage.appendChild(icon);
+    stage.appendChild(msg);
+    stage.appendChild(again);
+  }
+
+  async function startRecording() {
+    setStatus("");
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err) {
+      setStatus("Couldn't access the microphone. Check your browser's permission settings and try again.", "error");
+      return;
+    }
+
+    mimeType = pickMimeType();
+    try {
+      mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+    } catch (err) {
+      setStatus("Recording isn't supported in this browser. Try Chrome or Safari.", "error");
+      stream.getTracks().forEach((t) => t.stop());
+      return;
+    }
+
+    chunks = [];
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) chunks.push(e.data);
+    };
+    mediaRecorder.onstop = () => {
+      clearInterval(timerInterval);
+      stream.getTracks().forEach((t) => t.stop());
+      recordedBlob = new Blob(chunks, { type: mediaRecorder.mimeType || mimeType || "audio/webm" });
+      renderPreview();
+    };
+
+    mediaRecorder.start();
+    renderRecording();
+  }
+
+  function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state !== "inactive") {
+      mediaRecorder.stop();
+    }
+  }
+
+  function extFromMime(type) {
+    if (type.includes("mp4")) return "m4a";
+    if (type.includes("ogg")) return "ogg";
+    return "webm";
+  }
+
+  async function sendRecording() {
+    if (!recordedBlob) return;
+    renderSending();
+
+    const ext = extFromMime(recordedBlob.type || "");
+    const filename = "msg-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
+
+    try {
+      const res = await fetch(
+        SUPABASE_URL + "/storage/v1/object/" + BUCKET + "/" + filename,
+        {
+          method: "POST",
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: "Bearer " + SUPABASE_ANON_KEY,
+            "Content-Type": recordedBlob.type || "application/octet-stream",
+          },
+          body: recordedBlob,
+        }
+      );
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error("Upload failed (" + res.status + ") " + text);
+      }
+
+      renderSent();
+    } catch (err) {
+      setStatus("Something went wrong sending your message. Mind trying again?", "error");
+      renderPreview();
+    }
+  }
+
+  renderIdle();
+})();
+</script>
+</body>
+</html>
