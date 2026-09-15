@@ -113,6 +113,34 @@
   }
   .cursor-tip.show { opacity: 1; }
 
+  /* --- Mobile-only "tap to record" hint with a bobbing chevron. Shown
+     instead of the hover tooltip on touch devices (no fine pointer). --- */
+  .mobile-hint {
+    display: none;
+    position: fixed;
+    left: 50%;
+    top: 40%;
+    transform: translateX(-50%);
+    text-align: center;
+    color: rgba(255, 255, 255, 0.75);
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 16px;
+    pointer-events: none;
+    z-index: 4;
+  }
+  .mobile-hint.show { display: block; }
+  .mobile-hint svg {
+    display: block;
+    margin: 2px auto 0;
+    animation: hintBob 1.6s ease-in-out infinite;
+  }
+  @keyframes hintBob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(6px); }
+  }
+
   /* --- Anchored bubble once recording flow has started ---
      left/top get set inline by JS to the exact point the user clicked, and
      stay there — no re-centering as the content changes size across states
@@ -277,6 +305,12 @@
   <div class="anchor-box" id="anchorBox"></div>
 
   <div class="cursor-tip" id="cursorTip">click to start recording</div>
+
+  <div class="mobile-hint" id="mobileHint">
+    <span>tap to record</span>
+    <svg viewBox="0 0 20 12" width="20" height="12"><path d="M2 2L10 10L18 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </div>
+
   <audio id="previewAudio" style="display:none"></audio>
 
 <script>
@@ -297,6 +331,7 @@
   const phoneWrap = document.getElementById("phoneWrap");
   const phoneImg = document.getElementById("phoneImg");
   const cursorTip = document.getElementById("cursorTip");
+  const mobileHint = document.getElementById("mobileHint");
   const anchorBox = document.getElementById("anchorBox");
   const previewAudio = document.getElementById("previewAudio");
 
@@ -363,6 +398,7 @@
 
   function hideCursorTip() {
     cursorTip.classList.remove("show");
+    mobileHint.classList.remove("show");
   }
 
   function showAnchor(html, isError, isCountdown) {
@@ -403,6 +439,7 @@
     recordedBlob = null;
     previewAudio.pause();
     previewAudio.removeAttribute("src");
+    if (!canHover) mobileHint.classList.add("show");
   }
 
   function startFlow() {
