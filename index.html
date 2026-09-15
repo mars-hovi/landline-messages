@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Leave a message</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&family=Lobster&display=swap" rel="stylesheet">
 <style>
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
@@ -17,17 +20,15 @@
     position: relative;
     height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpolygon points='2,2 2,18 14,13' fill='white' stroke='black' stroke-width='1.2' stroke-linejoin='round'/%3E%3C/svg%3E") 2 2, pointer;
   }
 
   /* Phone always fully covers the viewport — true full-bleed, cropped as
      needed so no background ever shows behind it, at any screen size.
-     This single image now carries the wordmark and caption text baked in. */
+     Purely visual now — the click/hover behavior lives on .hit-area below. */
   .phone-wrap {
     position: fixed;
     inset: 0;
-    cursor: pointer;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
   }
   .phone-img {
     display: block;
@@ -35,6 +36,60 @@
     height: 100%;
     object-fit: cover;
     object-position: center;
+  }
+
+  /* Invisible region matching where the phone itself sits in the photo
+     (measured from the image), stopping right above the pedestal top so the
+     pedestal isn't part of the hoverable/clickable area. */
+  .hit-area {
+    position: fixed;
+    left: calc(23% - 24px);
+    top: calc(46% - 24px);
+    right: calc(28% - 24px);
+    bottom: calc(36% - 24px);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Header + subtext overlay, positioned from a 1728x1117 design reference
+     (header 150px from top, 180px Lobster; subtext 24px below, 24px Inter).
+     Font sizes use standard fluid-type interpolation (clamp with a linear
+     px+vw ramp) between a 375px mobile floor and the 1728px desktop
+     reference, so they scale smoothly at every width in between instead of
+     jumping straight to a flat minimum on phones. Formula: at viewport W,
+     size = min + (max-min) * (W-375)/(1728-375), clamped to [min, max]. */
+  .header {
+    position: fixed;
+    top: 13.43vh;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92vw;
+    margin: 0;
+    color: #fff;
+    text-align: center;
+    font-family: "Lobster", cursive;
+    font-weight: 400;
+    font-size: clamp(56px, 21.63px + 9.165vw, 180px);
+    line-height: 1.1;
+    pointer-events: none;
+    z-index: 5;
+  }
+  .subtext {
+    position: fixed;
+    top: calc(13.43vh + clamp(56px, 21.63px + 9.165vw, 180px) * 1.1 + clamp(12px, 2.15vh, 24px));
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90vw;
+    max-width: 600px;
+    margin: 0;
+    color: #fff;
+    text-align: center;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-weight: 400;
+    font-size: clamp(14px, 11.23px + 0.739vw, 24px);
+    line-height: 1.4;
+    pointer-events: none;
+    z-index: 5;
   }
 
   /* --- Tooltip that follows the cursor while idle --- */
@@ -46,7 +101,7 @@
     background: #fff;
     color: #2b2620;
     font-size: 0.8rem;
-    font-weight: 600;
+    font-weight: 500;
     padding: 7px 13px;
     border-radius: 999px;
     box-shadow: 0 4px 16px rgba(0,0,0,0.25);
@@ -59,98 +114,165 @@
   .cursor-tip.show { opacity: 1; }
 
   /* --- Anchored bubble once recording flow has started ---
-     Fixed to the viewport, positioned just above .caption so the two never
-     collide, regardless of screen size. */
+     left/top get set inline by JS to the exact point the user clicked, and
+     stay there — no re-centering as the content changes size across states
+     (countdown text vs. the wider preview player). A pure opacity fade,
+     same duration/easing as .cursor-tip, so the handoff between "hovering"
+     and "clicked" reads as one continuous element, not a shape swap. */
   .anchor-box {
     position: fixed;
-    left: 50%;
-    top: 15%;
-    transform: translateX(-50%) translateY(-6px) scale(0.96);
+    left: 0;
+    top: 0;
     background: #fff;
     color: #2b2620;
-    border-radius: 16px;
+    border-radius: 999px;
     box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-    padding: 10px 14px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    max-width: 210px;
+    padding: 7px 13px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    max-width: 260px;
     text-align: center;
     line-height: 1.35;
     opacity: 0;
-    transition: opacity 0.15s ease, transform 0.15s ease;
+    transition: opacity 0.12s ease;
     pointer-events: none;
     z-index: 20;
   }
-  .anchor-box.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); pointer-events: auto; }
+  .anchor-box.show { opacity: 1; pointer-events: auto; }
 
   .anchor-box.error { color: #a5271c; }
+
+  /* Countdown state: lighter red, pill-shaped like .cursor-tip, so it reads
+     as "about to record" — not yet the solid-white "click to hang up"
+     bubble that appears once recording is actually live. Padding/font stay
+     identical to the base .anchor-box so nothing shifts size between states. */
+  .anchor-box.countdown {
+    background: #faf7f2;
+    border-radius: 999px;
+  }
+
+  /* --- Recording indicator dot: solid during the countdown, then starts
+     flashing once recording actually begins (.rec-dot.blink). --- */
+  .rec-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin-right: 6px;
+    border-radius: 50%;
+    background: #e8867d;
+    vertical-align: middle;
+  }
+  .rec-dot.blink {
+    background: #e8291a;
+    animation: recBlink 1.8s ease-in-out infinite;
+  }
+  @keyframes recBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.25; }
+  }
 
   /* --- Preview player --- */
   .player-row {
     display: flex;
     align-items: center;
-    gap: 7px;
-    margin-bottom: 8px;
+    gap: 8px;
+    width: 220px;
   }
   .play-btn {
     flex: none;
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
+    background: none;
     border: none;
-    background: #d4572c;
-    color: #fff;
-    font-size: 0.7rem;
+    padding: 0;
+    color: #2b2620;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     pointer-events: auto;
   }
-  .scrub {
+  .scrub-wrap {
+    position: relative;
     flex: 1;
     min-width: 0;
-    width: 0;
-    accent-color: #d4572c;
+    height: 14px;
+    display: flex;
+    align-items: center;
+  }
+  .scrub-track {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: 2px;
+    background: #d9d3c8;
+    overflow: hidden;
+  }
+  .scrub-fill {
+    height: 100%;
+    width: 0%;
+    background: #6b6459;
+  }
+  .scrub {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    margin: 0;
+    opacity: 0;
     cursor: pointer;
     pointer-events: auto;
   }
   .time-label {
     flex: none;
-    font-size: 0.62rem;
-    color: #8a8070;
+    font-size: 0.68rem;
+    color: #6b6459;
     font-weight: 500;
-    min-width: 30px;
-    text-align: right;
+    min-width: 28px;
   }
-  .preview-actions {
+  #sendBtn {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: none;
+    background: #e8291a;
+    color: #fff;
     display: flex;
-    justify-content: space-between;
-    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    pointer-events: auto;
   }
-  .preview-actions button {
+  #discardBtn {
+    flex: none;
     background: none;
     border: none;
     padding: 0;
-    font-size: 0.78rem;
-    font-weight: 600;
+    color: #2b2620;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     pointer-events: auto;
-    font-family: inherit;
   }
-  #discardBtn { color: #8a8070; }
-  #sendBtn { color: #d4572c; }
-  #discardBtn:hover, #sendBtn:hover { text-decoration: underline; }
 
   @media (max-width: 380px) {
-    .anchor-box { max-width: 180px; font-size: 0.72rem; }
+    .anchor-box { font-size: 0.72rem; }
+  }
+
+  /* Mobile only: 64px side margins on the subtext. */
+  @media (max-width: 600px) {
+    .subtext { width: calc(100vw - 128px); }
   }
 </style>
 </head>
 <body>
-  <div class="phone-wrap" id="phoneWrap">
-    <img class="phone-img" id="phoneImg" src="phone.jpg" alt="Leave a message: record a lil voice mail for my alarm to play at the start each day!">
+  <div class="phone-wrap">
+    <img class="phone-img" id="phoneImg" src="phone.jpg" alt="a red rotary phone on a pedestal">
   </div>
+  <div class="hit-area" id="phoneWrap"></div>
+
+  <h1 class="header">leave a message</h1>
+  <p class="subtext">record a lil voicemail for my alarm to play at the start each day!</p>
 
   <div class="anchor-box" id="anchorBox"></div>
 
@@ -159,6 +281,13 @@
 
 <script>
 (function () {
+  // TEMP: UI-testing mode — skips real mic access/recording entirely so the
+  // countdown, "recording in progress" (with the pulsing dot), and the
+  // click-to-end-the-call interaction can be previewed without a mic
+  // permission prompt or Supabase upload. Set to false to restore real
+  // recording before this goes live for friends.
+  const DEMO_MODE = true;
+
   const SUPABASE_URL = "https://gwnvhgilayzjzkimvmcr.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_NgslFznczZJ3TP4W9K3C_A_521vw2GP";
   const BUCKET = "messages";
@@ -181,6 +310,42 @@
   let recordedBlob = null;
   let countdownTimer = null;
   let revertTimer = null;
+  let anchorX = 0;
+  let anchorY = 0;
+
+  // Same +14/+14 diagonal offset the hover tooltip (.cursor-tip) uses below,
+  // so the anchored bubble picks up in the exact same spot the hover
+  // tooltip was in — no jump at the moment of click.
+  const ANCHOR_OFFSET = 14;
+
+  function pinAnchorTo(x, y) {
+    anchorX = x + ANCHOR_OFFSET;
+    anchorY = y + ANCHOR_OFFSET;
+    anchorBox.style.left = anchorX + "px";
+    anchorBox.style.top = anchorY + "px";
+  }
+
+  // Spring-apart pop — the reverse of a snap-together logo reveal: instead
+  // of pieces springing inward and overshooting as they land, the pill
+  // squashes, springs outward past its own size (the overshoot), then
+  // collapses away to nothing. Used for both discard and a successful send.
+  function springPopAway(onDone) {
+    anchorBox.style.transition = "";
+    anchorBox.getAnimations().forEach((a) => a.cancel());
+    const anim = anchorBox.animate(
+      [
+        { transform: "scale(1)", opacity: 1, offset: 0 },
+        { transform: "scale(0.82)", opacity: 1, offset: 0.22 },
+        { transform: "scale(1.18)", opacity: 1, offset: 0.5 },
+        { transform: "scale(0)", opacity: 0, offset: 1 },
+      ],
+      { duration: 360, easing: "cubic-bezier(.3,.1,.3,1)" }
+    );
+    anim.onfinish = () => {
+      anchorBox.style.transform = "";
+      if (onDone) onDone();
+    };
+  }
 
   // ---------- cursor-following tooltip (idle, hover-capable devices) ----------
   if (canHover) {
@@ -189,7 +354,7 @@
     });
     phoneWrap.addEventListener("mousemove", (e) => {
       if (state !== "idle") return;
-      cursorTip.style.transform = `translate(${e.clientX + 14}px, ${e.clientY + 14}px)`;
+      cursorTip.style.transform = `translate(${e.clientX + ANCHOR_OFFSET}px, ${e.clientY + ANCHOR_OFFSET}px)`;
     });
     phoneWrap.addEventListener("mouseleave", () => {
       cursorTip.classList.remove("show");
@@ -200,13 +365,14 @@
     cursorTip.classList.remove("show");
   }
 
-  function showAnchor(html, isError) {
+  function showAnchor(html, isError, isCountdown) {
     anchorBox.innerHTML = html;
     anchorBox.classList.toggle("error", !!isError);
+    anchorBox.classList.toggle("countdown", !!isCountdown);
     anchorBox.classList.add("show");
   }
   function hideAnchor() {
-    anchorBox.classList.remove("show");
+    anchorBox.classList.remove("show", "countdown");
     anchorBox.innerHTML = "";
   }
 
@@ -246,19 +412,49 @@
     state = "countdown";
 
     // Ask for mic access right away so it's (hopefully) resolved by the time the countdown ends.
-    const permPromise = navigator.mediaDevices.getUserMedia({ audio: true });
+    const permPromise = DEMO_MODE ? null : navigator.mediaDevices.getUserMedia({ audio: true });
 
     let n = 3;
-    showAnchor(`recording in ${n}`);
+    showAnchor(`<span class="rec-dot"></span>recording in ${n}`, false, true);
     countdownTimer = setInterval(() => {
       n -= 1;
       if (n > 0) {
-        showAnchor(`recording in ${n}`);
+        showAnchor(`<span class="rec-dot"></span>recording in ${n}`, false, true);
         return;
       }
       clearInterval(countdownTimer);
+      if (DEMO_MODE) { beginDemoRecording(); return; }
       permPromise.then(beginRecording).catch(onMicError);
     }, 900);
+  }
+
+  // TEMP (DEMO_MODE only): shows the same "recording in progress" state as
+  // the real flow, minus any actual mic/MediaRecorder use.
+  function beginDemoRecording() {
+    state = "recording";
+    showAnchor('<span class="rec-dot blink"></span>click to hang up');
+  }
+
+  // TEMP (DEMO_MODE only): stands in for stopRecording() — builds a short
+  // silent (but real, playable) clip so the preview player can be tested
+  // end to end, then hands off to the normal enterPreview() flow.
+  function makeSilentWavBlob(seconds) {
+    const sampleRate = 8000;
+    const numSamples = sampleRate * seconds;
+    const buffer = new ArrayBuffer(44 + numSamples * 2);
+    const view = new DataView(buffer);
+    const writeStr = (off, str) => { for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i)); };
+    writeStr(0, "RIFF"); view.setUint32(4, 36 + numSamples * 2, true);
+    writeStr(8, "WAVE"); writeStr(12, "fmt ");
+    view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+    view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+    writeStr(36, "data"); view.setUint32(40, numSamples * 2, true);
+    return new Blob([buffer], { type: "audio/wav" });
+  }
+  function endDemoRecording() {
+    recordedBlob = makeSilentWavBlob(4);
+    enterPreview();
   }
 
   function onMicError() {
@@ -296,7 +492,7 @@
 
     mediaRecorder.start();
     state = "recording";
-    showAnchor("recording in progress.<br>click to hang up");
+    showAnchor('<span class="rec-dot blink"></span>click to hang up');
   }
 
   function stopRecording() {
@@ -310,48 +506,112 @@
     const url = URL.createObjectURL(recordedBlob);
     previewAudio.src = url;
 
+    const PLAY_ICON = '<svg viewBox="0 0 16 16" width="12" height="12"><polygon points="2,1 14,8 2,15" fill="currentColor"/></svg>';
+    const PAUSE_ICON = '<svg viewBox="0 0 16 16" width="12" height="12"><rect x="2" y="1" width="4" height="14" fill="currentColor"/><rect x="10" y="1" width="4" height="14" fill="currentColor"/></svg>';
+    const SEND_ICON = '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="2" x2="7" y2="9"/><polygon points="14 2 9 14 7 9 2 7 14 2"/></svg>';
+    const TRASH_ICON = '<svg viewBox="0 0 16 16" width="14" height="14"><path d="M2.5 4h11M6 4V2.3c0-.4.3-.7.7-.7h2.6c.4 0 .7.3.7.7V4M3.5 4l.7 9.6c0 .5.5.9 1 .9h5.6c.5 0 .9-.4 1-.9l.7-9.6" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
     anchorBox.innerHTML = `
       <div class="player-row">
-        <button class="play-btn" id="playBtn" aria-label="play">&#9654;</button>
-        <input class="scrub" id="scrub" type="range" min="0" max="100" value="0">
+        <button class="play-btn" id="playBtn" aria-label="play">${PLAY_ICON}</button>
+        <div class="scrub-wrap">
+          <div class="scrub-track"><div class="scrub-fill" id="scrubFill"></div></div>
+          <input class="scrub" id="scrub" type="range" min="0" max="100" value="0">
+        </div>
         <span class="time-label" id="timeLabel">0:00</span>
-      </div>
-      <div class="preview-actions">
-        <button id="discardBtn">discard</button>
-        <button id="sendBtn">send it</button>
+        <button id="discardBtn" aria-label="discard">${TRASH_ICON}</button>
+        <button id="sendBtn" aria-label="send">${SEND_ICON}</button>
       </div>
     `;
-    anchorBox.classList.remove("error");
+    anchorBox.classList.remove("error", "countdown");
     anchorBox.classList.add("show");
 
     const playBtn = document.getElementById("playBtn");
     const scrub = document.getElementById("scrub");
+    const scrubFill = document.getElementById("scrubFill");
     const timeLabel = document.getElementById("timeLabel");
 
     playBtn.onclick = (e) => {
       e.stopPropagation();
-      if (previewAudio.paused) { previewAudio.play(); playBtn.innerHTML = "&#10073;&#10073;"; }
-      else { previewAudio.pause(); playBtn.innerHTML = "&#9654;"; }
+      if (previewAudio.paused) { previewAudio.play(); playBtn.innerHTML = PAUSE_ICON; }
+      else { previewAudio.pause(); playBtn.innerHTML = PLAY_ICON; }
     };
     previewAudio.ontimeupdate = () => {
-      if (previewAudio.duration) scrub.value = (previewAudio.currentTime / previewAudio.duration) * 100;
+      const pct = previewAudio.duration ? (previewAudio.currentTime / previewAudio.duration) * 100 : 0;
+      scrub.value = pct;
+      scrubFill.style.width = pct + "%";
       timeLabel.textContent = fmtTime(previewAudio.currentTime);
     };
-    previewAudio.onended = () => { playBtn.innerHTML = "&#9654;"; };
+    previewAudio.onended = () => { playBtn.innerHTML = PLAY_ICON; };
     scrub.oninput = (e) => {
       e.stopPropagation();
       if (previewAudio.duration) previewAudio.currentTime = (scrub.value / 100) * previewAudio.duration;
+      scrubFill.style.width = scrub.value + "%";
     };
     scrub.onclick = (e) => e.stopPropagation();
 
-    document.getElementById("discardBtn").onclick = (e) => { e.stopPropagation(); goIdle(); };
-    document.getElementById("sendBtn").onclick = (e) => { e.stopPropagation(); sendRecording(); };
+    document.getElementById("discardBtn").onclick = (e) => {
+      e.stopPropagation();
+      springPopAway(goIdle);
+    };
+    document.getElementById("sendBtn").onclick = (e) => {
+      e.stopPropagation();
+      document.getElementById("sendBtn").disabled = true;
+      document.getElementById("discardBtn").disabled = true;
+      sendRecording(anchorBox.getBoundingClientRect());
+    };
   }
 
-  async function sendRecording() {
+  // Shimmering sparkle burst for a successful send — little four-point
+  // stars twinkle in place across the whole width of the pill (gentle
+  // drift + scale pulse, no directional streaking) like glinting light,
+  // not particles shooting across the screen. Appended to <body> so they
+  // animate independently of whatever the anchor box does next.
+  const SPARKLE_SVG = '<svg viewBox="0 0 24 24" width="100%" height="100%"><path d="M12 0 L14.5 9.5 L24 12 L14.5 14.5 L12 24 L9.5 14.5 L0 12 L9.5 9.5 Z" fill="currentColor"/></svg>';
+
+  function spawnBurst(rect) {
+    const sparkleColors = ["#ffffff", "#ffe9a8", "#ffd6ec", "#fff4cf"];
+    for (let i = 0; i < 50; i++) {
+      const x = rect.left + Math.random() * rect.width;
+      const y = rect.top + Math.random() * rect.height;
+      const color = sparkleColors[i % sparkleColors.length];
+      const size = 6 + Math.random() * 10;
+      const driftX = (Math.random() - 0.5) * 20;
+      const driftY = (Math.random() - 0.5) * 20;
+      const rot = (Math.random() - 0.5) * 70;
+      const delay = Math.random() * 550;
+
+      const el = document.createElement("div");
+      el.style.cssText = `position:fixed;left:${x}px;top:${y}px;width:${size}px;height:${size}px;` +
+        `color:${color};filter:drop-shadow(0 0 3px rgba(255,222,140,0.9));` +
+        `pointer-events:none;z-index:999;`;
+      el.innerHTML = SPARKLE_SVG;
+      document.body.appendChild(el);
+      const anim = el.animate(
+        [
+          { transform: `translate(0,0) rotate(0deg) scale(0)`, opacity: 0, offset: 0 },
+          { transform: `translate(${driftX * 0.5}px, ${driftY * 0.5}px) rotate(${rot * 0.6}deg) scale(1.05)`, opacity: 1, offset: 0.45 },
+          { transform: `translate(${driftX}px, ${driftY}px) rotate(${rot}deg) scale(0)`, opacity: 0, offset: 1 },
+        ],
+        { duration: 1100, delay, easing: "cubic-bezier(.4,0,.2,1)" }
+      );
+      anim.onfinish = () => el.remove();
+    }
+  }
+
+  async function sendRecording(pillRect) {
     if (!recordedBlob) return;
     state = "sending";
-    showAnchor("sending...");
+
+    if (DEMO_MODE) {
+      // TEMP: never actually upload the fake demo clip to the real bucket.
+      revertTimer = setTimeout(() => {
+        state = "sent";
+        spawnBurst(pillRect);
+        springPopAway(goIdle);
+      }, 400);
+      return;
+    }
 
     const ext = extFromMime(recordedBlob.type || "");
     const filename = "msg-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
@@ -369,19 +629,30 @@
       if (!res.ok) throw new Error("upload failed: " + res.status);
 
       state = "sent";
-      showAnchor("sent! thanks 🥰");
-      revertTimer = setTimeout(goIdle, 2000);
+      spawnBurst(pillRect);
+      springPopAway(goIdle);
     } catch (err) {
       showAnchor("something went wrong — try again?", true);
       revertTimer = setTimeout(() => { if (recordedBlob) enterPreview(); else goIdle(); }, 2400);
     }
   }
 
-  phoneWrap.addEventListener("click", () => {
-    if (state === "idle") { startFlow(); return; }
-    if (state === "recording") { stopRecording(); return; }
-    // countdown / preview / sending / sent / error: clicks on the phone itself do nothing extra
+  function hangUp() {
+    if (state !== "recording") return;
+    DEMO_MODE ? endDemoRecording() : stopRecording();
+  }
+
+  phoneWrap.addEventListener("click", (e) => {
+    if (state === "idle") { pinAnchorTo(e.clientX, e.clientY); startFlow(); }
+    // recording is handled by the document-level listener below, so it
+    // works no matter where on the page the click lands.
   });
+
+  // While recording, a tap ANYWHERE on the page hangs up — not just the
+  // phone's hit-area or the pill itself. Buttons inside the preview player
+  // (play/scrub/discard/send) all stopPropagation, so they never reach
+  // here, and hangUp() itself no-ops outside the "recording" state.
+  document.addEventListener("click", hangUp);
 
   goIdle();
 })();
