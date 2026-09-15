@@ -92,6 +92,19 @@
     z-index: 5;
   }
 
+  /* Desktop only: header pinned a fixed 64px from the top (instead of the
+     vh-based offset used on mobile) so it never drifts down into the phone
+     on short/wide windows, and the subtext stays on one line, no wrap. */
+  @media (min-width: 601px) {
+    .header { top: 64px; }
+    .subtext {
+      top: calc(64px + clamp(56px, 21.63px + 9.165vw, 180px) * 1.1 + clamp(12px, 2.15vh, 24px));
+      width: auto;
+      max-width: 92vw;
+      white-space: nowrap;
+    }
+  }
+
   /* --- Tooltip that follows the cursor while idle --- */
   .cursor-tip {
     position: fixed;
@@ -125,20 +138,23 @@
     color: rgba(255, 255, 255, 0.75);
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-style: italic;
-    font-weight: 600;
-    font-size: 16px;
+    font-weight: 400;
+    font-size: clamp(14px, 11.23px + 0.739vw, 24px);
     pointer-events: none;
     z-index: 4;
   }
-  .mobile-hint.show { display: block; }
+  .mobile-hint.show {
+    display: block;
+    animation: hintBob 1.6s ease-in-out infinite;
+  }
   .mobile-hint svg {
     display: block;
     margin: 2px auto 0;
-    animation: hintBob 1.6s ease-in-out infinite;
+    transform: scale(0.9);
   }
   @keyframes hintBob {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(6px); }
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(6px); }
   }
 
   /* --- Anchored bubble once recording flow has started ---
