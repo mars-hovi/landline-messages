@@ -309,6 +309,16 @@
       top: calc(44px + clamp(46px, 8.86px + 9.904vw, 180px) * 1.1 + clamp(12px, 2.15vh, 24px));
       width: calc(100vw - 128px);
     }
+
+    /* On mobile the pill always pops open dead-center on screen (same spot
+       as the "tap to record" hint it replaces) instead of at the tap
+       point — a tap near the edge of the phone was pinning it there too,
+       letting it bleed off-screen with the discard/send buttons untappable. */
+    .anchor-box {
+      left: 50% !important;
+      top: 40% !important;
+      transform: translate(-50%, -50%) !important;
+    }
   }
 </style>
 </head>
