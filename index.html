@@ -9,65 +9,71 @@
   * { box-sizing: border-box; }
   html, body {
     margin: 0;
-    min-height: 100vh;
+    height: 100%;
+    overflow: hidden;
     background: #c22029;
   }
   body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 32px 20px;
+    position: relative;
+    height: 100vh;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
-  .scene {
-    width: 100%;
-    max-width: 420px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
+  /* Wordmark stays pinned near the top, always fully visible. */
   .wordmark-wrap {
-    width: 68%;
-    max-width: 300px;
-    margin-bottom: 4px;
+    position: absolute;
+    top: 5vh;
+    left: 50%;
+    transform: translateX(-50%);
+    line-height: 0;
+    z-index: 5;
   }
   .wordmark-wrap img {
-    width: 100%;
     display: block;
+    width: auto;
+    height: auto;
+    max-width: min(1200px, 90vw);
+    max-height: 12vh;
     filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
   }
 
+  /* Phone is a fixed width, dead-centered on the screen — on desktop it's
+     taller than the viewport on purpose and bleeds off the top/bottom. */
   .phone-wrap {
-    position: relative;
-    width: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    line-height: 0;
     cursor: pointer;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
   .phone-img {
-    width: 100%;
     display: block;
+    width: min(1043px, 92vw);
+    height: auto;
     -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%);
     mask-image: linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%);
   }
 
+  /* Fixed to the viewport (not the bleeding image) so it always stays on
+     screen, pinned near the top edge of the pedestal. The offset scales
+     with the same width formula as the phone image so it tracks the same
+     spot on the photo at any screen size. */
   .caption {
-    color: #fff;
+    position: fixed;
+    left: 50%;
+    top: calc(50% + min(1043px, 92vw) * 0.16);
+    transform: translateX(-50%);
+    width: calc(min(1043px, 92vw) * 0.6);
+    color: #3a3026;
     text-align: center;
     font-size: 0.95rem;
-    line-height: 1.45;
-    max-width: 280px;
-    margin: 6px 0 0;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.25);
-  }
-  .subcaption {
-    color: rgba(255,255,255,0.75);
-    text-align: center;
-    font-size: 0.72rem;
-    margin: 10px 0 0;
+    line-height: 1.4;
+    margin: 0;
+    pointer-events: none;
+    z-index: 5;
   }
 
   /* --- Tooltip that follows the cursor while idle --- */
@@ -91,11 +97,15 @@
   }
   .cursor-tip.show { opacity: 1; }
 
-  /* --- Anchored bubble once recording flow has started --- */
+  /* --- Anchored bubble once recording flow has started ---
+     Fixed to the viewport for the same reason as .caption: the phone image
+     bleeds off-screen on desktop, so anything anchored to its own box would
+     go off-screen with it. Sits just above the caption, same safe zone. */
   .anchor-box {
-    position: absolute;
-    top: 8%;
-    right: 2%;
+    position: fixed;
+    left: 50%;
+    top: calc(50% + min(1043px, 92vw) * 0.02);
+    transform: translateX(-50%) translateY(-6px) scale(0.96);
     background: #fff;
     color: #2b2620;
     border-radius: 16px;
@@ -107,12 +117,11 @@
     text-align: center;
     line-height: 1.35;
     opacity: 0;
-    transform: translateY(-6px) scale(0.96);
     transition: opacity 0.15s ease, transform 0.15s ease;
     pointer-events: none;
     z-index: 20;
   }
-  .anchor-box.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+  .anchor-box.show { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); pointer-events: auto; }
 
   .anchor-box.error { color: #a5271c; }
 
@@ -186,12 +195,11 @@
 
     <div class="phone-wrap" id="phoneWrap">
       <img class="phone-img" id="phoneImg" src="phone.jpg" alt="a red rotary phone on a pedestal">
-      <div class="anchor-box" id="anchorBox"></div>
     </div>
-
-    <p class="caption">record a lil message for me to listen to at the start of my day!</p>
-    <p class="subcaption">sent straight through — no review, no takebacks 🙂</p>
   </div>
+
+  <p class="caption">record a lil message for me to listen to at the start of my day!</p>
+  <div class="anchor-box" id="anchorBox"></div>
 
   <div class="cursor-tip" id="cursorTip">click to start recording</div>
   <audio id="previewAudio" style="display:none"></audio>
