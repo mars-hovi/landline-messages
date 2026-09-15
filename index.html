@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Leave a message</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
@@ -30,46 +33,47 @@
   }
   .wordmark-wrap img {
     display: block;
-    width: auto;
+    width: min(1200px, 90vw);
     height: auto;
-    max-width: min(1200px, 90vw);
-    max-height: 12vh;
     filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
   }
 
-  /* Phone is a fixed width, dead-centered on the screen — on desktop it's
-     taller than the viewport on purpose and bleeds off the top/bottom. */
+  /* Phone always fully covers the viewport — true full-bleed, cropped as
+     needed so no background ever shows behind it, at any screen size. */
   .phone-wrap {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    line-height: 0;
+    position: fixed;
+    inset: 0;
     cursor: pointer;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
   .phone-img {
     display: block;
-    width: min(1043px, 92vw);
-    height: auto;
-    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%);
-    mask-image: linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%);
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
   }
 
   /* Fixed to the viewport (not the bleeding image) so it always stays on
      screen, pinned near the top edge of the pedestal. The offset scales
      with the same width formula as the phone image so it tracks the same
      spot on the photo at any screen size. */
+  /* Positioned from an exact design reference at 1728x1117 (x:673, y:264,
+     381px wide) and expressed as percentages of that frame so it lands in
+     the same relative spot at any screen size. */
   .caption {
     position: fixed;
     left: 50%;
-    top: calc(50% + min(1043px, 92vw) * 0.16);
+    top: 23.64%;
     transform: translateX(-50%);
-    width: calc(min(1043px, 92vw) * 0.6);
-    color: #3a3026;
+    width: min(381px, 85vw);
+    color: #fff;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.35), 0 1px 10px rgba(0,0,0,0.2);
     text-align: center;
-    font-size: 0.95rem;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-weight: 400;
+    font-size: 20px;
     line-height: 1.4;
     margin: 0;
     pointer-events: none;
@@ -98,13 +102,12 @@
   .cursor-tip.show { opacity: 1; }
 
   /* --- Anchored bubble once recording flow has started ---
-     Fixed to the viewport for the same reason as .caption: the phone image
-     bleeds off-screen on desktop, so anything anchored to its own box would
-     go off-screen with it. Sits just above the caption, same safe zone. */
+     Fixed to the viewport, positioned just above .caption so the two never
+     collide, regardless of screen size. */
   .anchor-box {
     position: fixed;
     left: 50%;
-    top: calc(50% + min(1043px, 92vw) * 0.02);
+    top: 15%;
     transform: translateX(-50%) translateY(-6px) scale(0.96);
     background: #fff;
     color: #2b2620;
@@ -198,7 +201,7 @@
     </div>
   </div>
 
-  <p class="caption">record a lil message for me to listen to at the start of my day!</p>
+  <p class="caption">record a lil voice mail for my alarm to play at the start each day!</p>
   <div class="anchor-box" id="anchorBox"></div>
 
   <div class="cursor-tip" id="cursorTip">click to start recording</div>
