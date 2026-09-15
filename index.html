@@ -69,14 +69,14 @@
     text-align: center;
     font-family: "Lobster", cursive;
     font-weight: 400;
-    font-size: clamp(50px, 13.97px + 9.609vw, 180px);
+    font-size: clamp(46px, 8.86px + 9.904vw, 180px);
     line-height: 1.1;
     pointer-events: none;
     z-index: 5;
   }
   .subtext {
     position: fixed;
-    top: calc(13.43vh + clamp(50px, 13.97px + 9.609vw, 180px) * 1.1 + clamp(12px, 2.15vh, 24px));
+    top: calc(13.43vh + clamp(46px, 8.86px + 9.904vw, 180px) * 1.1 + clamp(12px, 2.15vh, 24px));
     left: 50%;
     transform: translateX(-50%);
     width: 90vw;
@@ -96,9 +96,9 @@
      vh-based offset used on mobile) so it never drifts down into the phone
      on short/wide windows, and the subtext stays on one line, no wrap. */
   @media (min-width: 601px) {
-    .header { top: 64px; }
+    .header { top: 32px; }
     .subtext {
-      top: calc(64px + clamp(50px, 13.97px + 9.609vw, 180px) * 1.1 + clamp(12px, 2.15vh, 24px));
+      top: calc(32px + clamp(46px, 8.86px + 9.904vw, 180px) * 1.1 + clamp(12px, 2.15vh, 24px));
       width: auto;
       max-width: 92vw;
       white-space: nowrap;
@@ -186,14 +186,9 @@
 
   .anchor-box.error { color: #a5271c; }
 
-  /* Countdown state: lighter red, pill-shaped like .cursor-tip, so it reads
-     as "about to record" — not yet the solid-white "click to hang up"
-     bubble that appears once recording is actually live. Padding/font stay
-     identical to the base .anchor-box so nothing shifts size between states. */
-  .anchor-box.countdown {
-    background: #faf7f2;
-    border-radius: 999px;
-  }
+  /* Countdown state is distinguished from "live" only by the lighter red
+     dot (.rec-dot vs .rec-dot.blink) — the pill itself stays the same
+     white as every other state, for consistent text contrast throughout. */
 
   /* --- Recording indicator dot: solid during the countdown, then starts
      flashing once recording actually begins (.rec-dot.blink). --- */
@@ -309,9 +304,9 @@
      descenders/tails (e.g. the "d" in "record") have room and don't get
      clipped by the viewport edge. */
   @media (max-width: 600px) {
-    .header { top: 44px; width: 88vw; }
+    .header { top: 44px; width: 85vw; }
     .subtext {
-      top: calc(44px + clamp(50px, 13.97px + 9.609vw, 180px) * 1.1 + clamp(12px, 2.15vh, 24px));
+      top: calc(44px + clamp(46px, 8.86px + 9.904vw, 180px) * 1.1 + clamp(12px, 2.15vh, 24px));
       width: calc(100vw - 128px);
     }
   }
