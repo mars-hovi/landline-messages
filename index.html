@@ -92,13 +92,13 @@
     z-index: 5;
   }
 
-  /* Desktop only: header pinned a fixed 64px from the top (instead of the
+  /* Desktop only: header pinned a fixed 44px from the top (instead of the
      vh-based offset used on mobile) so it never drifts down into the phone
      on short/wide windows, and the subtext stays on one line, no wrap. */
   @media (min-width: 601px) {
-    .header { top: 64px; }
+    .header { top: 44px; }
     .subtext {
-      top: calc(64px + clamp(56px, 21.63px + 9.165vw, 180px) * 1.1 + clamp(12px, 2.15vh, 24px));
+      top: calc(44px + clamp(56px, 21.63px + 9.165vw, 180px) * 1.1 + clamp(12px, 2.15vh, 24px));
       width: auto;
       max-width: 92vw;
       white-space: nowrap;
