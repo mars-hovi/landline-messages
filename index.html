@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Leave a message</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
@@ -22,24 +19,9 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
 
-  /* Wordmark stays pinned near the top, always fully visible. */
-  .wordmark-wrap {
-    position: absolute;
-    top: 5vh;
-    left: 50%;
-    transform: translateX(-50%);
-    line-height: 0;
-    z-index: 5;
-  }
-  .wordmark-wrap img {
-    display: block;
-    width: min(1200px, 90vw);
-    height: auto;
-    filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
-  }
-
   /* Phone always fully covers the viewport — true full-bleed, cropped as
-     needed so no background ever shows behind it, at any screen size. */
+     needed so no background ever shows behind it, at any screen size.
+     This single image now carries the wordmark and caption text baked in. */
   .phone-wrap {
     position: fixed;
     inset: 0;
@@ -53,31 +35,6 @@
     height: 100%;
     object-fit: cover;
     object-position: center;
-  }
-
-  /* Fixed to the viewport (not the bleeding image) so it always stays on
-     screen, pinned near the top edge of the pedestal. The offset scales
-     with the same width formula as the phone image so it tracks the same
-     spot on the photo at any screen size. */
-  /* Positioned from an exact design reference at 1728x1117 (x:673, y:264,
-     381px wide) and expressed as percentages of that frame so it lands in
-     the same relative spot at any screen size. */
-  .caption {
-    position: fixed;
-    left: 50%;
-    top: 23.64%;
-    transform: translateX(-50%);
-    width: min(381px, 85vw);
-    color: #fff;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.35), 0 1px 10px rgba(0,0,0,0.2);
-    text-align: center;
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    font-weight: 400;
-    font-size: 20px;
-    line-height: 1.4;
-    margin: 0;
-    pointer-events: none;
-    z-index: 5;
   }
 
   /* --- Tooltip that follows the cursor while idle --- */
@@ -191,17 +148,10 @@
 </style>
 </head>
 <body>
-  <div class="scene">
-    <div class="wordmark-wrap">
-      <img src="leave-a-message.png" alt="leave a message...">
-    </div>
-
-    <div class="phone-wrap" id="phoneWrap">
-      <img class="phone-img" id="phoneImg" src="phone.jpg" alt="a red rotary phone on a pedestal">
-    </div>
+  <div class="phone-wrap" id="phoneWrap">
+    <img class="phone-img" id="phoneImg" src="phone.jpg" alt="Leave a message: record a lil voice mail for my alarm to play at the start each day!">
   </div>
 
-  <p class="caption">record a lil voice mail for my alarm to play at the start each day!</p>
   <div class="anchor-box" id="anchorBox"></div>
 
   <div class="cursor-tip" id="cursorTip">click to start recording</div>
