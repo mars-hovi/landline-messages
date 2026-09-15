@@ -5,355 +5,337 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Leave a message</title>
 <style>
-  :root {
-    color-scheme: light;
-    --bg: #faf7f2;
-    --card: #ffffff;
-    --ink: #2b2620;
-    --muted: #8a8070;
-    --accent: #d4572c;
-    --accent-dark: #b8471f;
-    --ring: #f0e8dc;
-    --danger: #c0392b;
-    --ok: #3f7d4f;
-  }
+  :root { color-scheme: light; }
   * { box-sizing: border-box; }
-  body {
+  html, body {
     margin: 0;
     min-height: 100vh;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #c22029;
+  }
+  body {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 24px 16px;
+    padding: 32px 20px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   }
-  .card {
+
+  .scene {
     width: 100%;
     max-width: 420px;
-    background: var(--card);
-    border-radius: 24px;
-    padding: 36px 28px 32px;
-    box-shadow: 0 10px 40px rgba(60, 40, 20, 0.08);
-    text-align: center;
-  }
-  h1 {
-    font-size: 1.5rem;
-    margin: 0 0 6px;
-    letter-spacing: -0.01em;
-  }
-  .sub {
-    color: var(--muted);
-    font-size: 0.95rem;
-    margin: 0 0 32px;
-    line-height: 1.4;
-  }
-  .stage {
-    min-height: 220px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 20px;
   }
-  .record-btn {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    border: none;
-    background: var(--accent);
-    color: white;
+
+  .wordmark-wrap {
+    width: 68%;
+    max-width: 300px;
+    margin-bottom: 4px;
+  }
+  .wordmark-wrap img {
+    width: 100%;
+    display: block;
+    filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
+  }
+
+  .phone-wrap {
+    position: relative;
+    width: 100%;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.15s ease, background 0.15s ease;
-    box-shadow: 0 6px 20px rgba(212, 87, 44, 0.35);
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
-  .record-btn:hover { background: var(--accent-dark); transform: scale(1.03); }
-  .record-btn:active { transform: scale(0.97); }
-  .record-btn svg { width: 40px; height: 40px; }
-
-  .stop-btn {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    border: none;
-    background: var(--danger);
-    color: white;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 0 8px rgba(192, 57, 43, 0.12);
-    animation: pulse 1.6s ease-in-out infinite;
-  }
-  .stop-btn .sq { width: 30px; height: 30px; background: white; border-radius: 6px; }
-  @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 8px rgba(192, 57, 43, 0.12); }
-    50% { box-shadow: 0 0 0 16px rgba(192, 57, 43, 0.05); }
+  .phone-img {
+    width: 100%;
+    display: block;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 4%, black 96%, transparent 100%);
   }
 
-  .timer {
-    font-variant-numeric: tabular-nums;
-    font-size: 1.4rem;
-    font-weight: 600;
-    color: var(--ink);
-  }
-  .hint { color: var(--muted); font-size: 0.9rem; }
-
-  audio { width: 100%; margin: 4px 0 6px; }
-
-  .row { display: flex; gap: 10px; width: 100%; }
-  .btn {
-    flex: 1;
-    padding: 14px 12px;
-    border-radius: 14px;
-    border: none;
-    font-size: 0.98rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.15s ease, transform 0.15s ease;
-  }
-  .btn:active { transform: scale(0.98); }
-  .btn-primary { background: var(--accent); color: white; }
-  .btn-primary:hover { background: var(--accent-dark); }
-  .btn-secondary { background: var(--ring); color: var(--ink); }
-  .btn-secondary:hover { background: #e6dccb; }
-  .btn:disabled { opacity: 0.5; cursor: default; }
-
-  .status { font-size: 0.95rem; color: var(--muted); min-height: 1.2em; }
-  .status.error { color: var(--danger); }
-  .status.ok { color: var(--ok); }
-
-  .done-icon {
-    width: 64px; height: 64px; border-radius: 50%;
-    background: #eaf5ec; display: flex; align-items: center; justify-content: center;
-  }
-  .done-icon svg { width: 30px; height: 30px; color: var(--ok); }
-
-  footer {
-    margin-top: 24px;
-    font-size: 0.78rem;
-    color: var(--muted);
-    max-width: 420px;
+  .caption {
+    color: #fff;
     text-align: center;
-    padding: 0 12px;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    max-width: 280px;
+    margin: 6px 0 0;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  }
+  .subcaption {
+    color: rgba(255,255,255,0.75);
+    text-align: center;
+    font-size: 0.72rem;
+    margin: 10px 0 0;
   }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1c1916;
-      --card: #262220;
-      --ink: #f2ece2;
-      --muted: #9c9184;
-      --ring: #35302b;
-    }
-    .card { box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
+  /* --- Tooltip that follows the cursor while idle --- */
+  .cursor-tip {
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translate(0, 0);
+    background: #fff;
+    color: #2b2620;
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 7px 13px;
+    border-radius: 999px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 20;
+    opacity: 0;
+    transition: opacity 0.12s ease;
+  }
+  .cursor-tip.show { opacity: 1; }
+
+  /* --- Anchored bubble once recording flow has started --- */
+  .anchor-box {
+    position: absolute;
+    top: 8%;
+    right: 2%;
+    background: #fff;
+    color: #2b2620;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    padding: 10px 14px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    max-width: 210px;
+    text-align: center;
+    line-height: 1.35;
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    pointer-events: none;
+    z-index: 20;
+  }
+  .anchor-box.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+
+  .anchor-box.error { color: #a5271c; }
+
+  /* --- Preview player --- */
+  .player-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 8px;
+  }
+  .play-btn {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: none;
+    background: #d4572c;
+    color: #fff;
+    font-size: 0.7rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+  }
+  .scrub {
+    flex: 1;
+    min-width: 0;
+    width: 0;
+    accent-color: #d4572c;
+    cursor: pointer;
+    pointer-events: auto;
+  }
+  .time-label {
+    flex: none;
+    font-size: 0.62rem;
+    color: #8a8070;
+    font-weight: 500;
+    min-width: 30px;
+    text-align: right;
+  }
+  .preview-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .preview-actions button {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    pointer-events: auto;
+    font-family: inherit;
+  }
+  #discardBtn { color: #8a8070; }
+  #sendBtn { color: #d4572c; }
+  #discardBtn:hover, #sendBtn:hover { text-decoration: underline; }
+
+  @media (max-width: 380px) {
+    .anchor-box { max-width: 180px; font-size: 0.72rem; }
   }
 </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Leave a message 📞</h1>
-    <p class="sub">Record a quick voice message. It'll get added to the rotation and might play when the phone rings.</p>
-
-    <div class="stage" id="stage">
-      <!-- filled in by JS -->
+  <div class="scene">
+    <div class="wordmark-wrap">
+      <img src="leave-a-message.png" alt="leave a message...">
     </div>
 
-    <p class="status" id="status"></p>
+    <div class="phone-wrap" id="phoneWrap">
+      <img class="phone-img" id="phoneImg" src="phone.jpg" alt="a red rotary phone on a pedestal">
+      <div class="anchor-box" id="anchorBox"></div>
+    </div>
+
+    <p class="caption">record a lil message for me to listen to at the start of my day!</p>
+    <p class="subcaption">sent straight through — no review, no takebacks 🙂</p>
   </div>
-  <footer>Recordings are sent straight through — no review, no takebacks once sent 🙂</footer>
+
+  <div class="cursor-tip" id="cursorTip">click to start recording</div>
+  <audio id="previewAudio" style="display:none"></audio>
 
 <script>
 (function () {
-  // ---- Fill these in once the Supabase project exists ----
   const SUPABASE_URL = "https://gwnvhgilayzjzkimvmcr.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_NgslFznczZJ3TP4W9K3C_A_521vw2GP";
   const BUCKET = "messages";
-  // ----------------------------------------------------------
+  const IMG_IDLE = "phone.jpg";
+  const IMG_ACTIVE = "phone-lift.jpg";
 
-  const stage = document.getElementById("stage");
-  const statusEl = document.getElementById("status");
+  const phoneWrap = document.getElementById("phoneWrap");
+  const phoneImg = document.getElementById("phoneImg");
+  const cursorTip = document.getElementById("cursorTip");
+  const anchorBox = document.getElementById("anchorBox");
+  const previewAudio = document.getElementById("previewAudio");
 
+  const canHover = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+  let state = "idle"; // idle | countdown | recording | preview | sending | sent | error
   let mediaRecorder = null;
   let chunks = [];
   let mimeType = "";
   let stream = null;
   let recordedBlob = null;
-  let timerInterval = null;
-  let startTime = 0;
+  let countdownTimer = null;
+  let revertTimer = null;
 
-  function setStatus(text, kind) {
-    statusEl.textContent = text || "";
-    statusEl.className = "status" + (kind ? " " + kind : "");
+  // ---------- cursor-following tooltip (idle, hover-capable devices) ----------
+  if (canHover) {
+    phoneWrap.addEventListener("mouseenter", () => {
+      if (state === "idle") cursorTip.classList.add("show");
+    });
+    phoneWrap.addEventListener("mousemove", (e) => {
+      if (state !== "idle") return;
+      cursorTip.style.transform = `translate(${e.clientX + 14}px, ${e.clientY + 14}px)`;
+    });
+    phoneWrap.addEventListener("mouseleave", () => {
+      cursorTip.classList.remove("show");
+    });
+  }
+
+  function hideCursorTip() {
+    cursorTip.classList.remove("show");
+  }
+
+  function showAnchor(html, isError) {
+    anchorBox.innerHTML = html;
+    anchorBox.classList.toggle("error", !!isError);
+    anchorBox.classList.add("show");
+  }
+  function hideAnchor() {
+    anchorBox.classList.remove("show");
+    anchorBox.innerHTML = "";
   }
 
   function pickMimeType() {
-    const candidates = [
-      "audio/mp4",
-      "audio/webm;codecs=opus",
-      "audio/webm",
-      "audio/ogg;codecs=opus",
-    ];
+    const candidates = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm", "audio/ogg;codecs=opus"];
     for (const c of candidates) {
-      if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(c)) {
-        return c;
-      }
+      if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(c)) return c;
     }
     return "";
   }
-
+  function extFromMime(type) {
+    if (type.includes("mp4")) return "m4a";
+    if (type.includes("ogg")) return "ogg";
+    return "webm";
+  }
   function fmtTime(sec) {
+    if (!isFinite(sec)) sec = 0;
     const m = Math.floor(sec / 60).toString().padStart(2, "0");
     const s = Math.floor(sec % 60).toString().padStart(2, "0");
     return m + ":" + s;
   }
 
-  function renderIdle() {
+  function goIdle() {
+    clearTimeout(revertTimer);
+    state = "idle";
+    phoneImg.src = IMG_IDLE;
+    hideAnchor();
     recordedBlob = null;
-    setStatus("");
-    stage.innerHTML = "";
-
-    const btn = document.createElement("button");
-    btn.className = "record-btn";
-    btn.setAttribute("aria-label", "Start recording");
-    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="9"/></svg>';
-    btn.onclick = startRecording;
-
-    const hint = document.createElement("div");
-    hint.className = "hint";
-    hint.textContent = "Tap to start recording";
-
-    stage.appendChild(btn);
-    stage.appendChild(hint);
+    previewAudio.pause();
+    previewAudio.removeAttribute("src");
   }
 
-  function renderRecording() {
-    stage.innerHTML = "";
+  function startFlow() {
+    if (state !== "idle") return;
+    hideCursorTip();
+    phoneImg.src = IMG_ACTIVE;
+    state = "countdown";
 
-    const btn = document.createElement("button");
-    btn.className = "stop-btn";
-    btn.setAttribute("aria-label", "Stop recording");
-    btn.innerHTML = '<span class="sq"></span>';
-    btn.onclick = stopRecording;
+    // Ask for mic access right away so it's (hopefully) resolved by the time the countdown ends.
+    const permPromise = navigator.mediaDevices.getUserMedia({ audio: true });
 
-    const timer = document.createElement("div");
-    timer.className = "timer";
-    timer.id = "timerDisplay";
-    timer.textContent = "00:00";
-
-    const hint = document.createElement("div");
-    hint.className = "hint";
-    hint.textContent = "Recording... tap to stop";
-
-    stage.appendChild(btn);
-    stage.appendChild(timer);
-    stage.appendChild(hint);
-
-    startTime = Date.now();
-    timerInterval = setInterval(() => {
-      const el = document.getElementById("timerDisplay");
-      if (el) el.textContent = fmtTime((Date.now() - startTime) / 1000);
-    }, 250);
+    let n = 3;
+    showAnchor(`recording in ${n}`);
+    countdownTimer = setInterval(() => {
+      n -= 1;
+      if (n > 0) {
+        showAnchor(`recording in ${n}`);
+        return;
+      }
+      clearInterval(countdownTimer);
+      permPromise.then(beginRecording).catch(onMicError);
+    }, 900);
   }
 
-  function renderPreview() {
-    stage.innerHTML = "";
-    setStatus("");
-
-    const url = URL.createObjectURL(recordedBlob);
-    const audio = document.createElement("audio");
-    audio.controls = true;
-    audio.src = url;
-
-    const row = document.createElement("div");
-    row.className = "row";
-
-    const discardBtn = document.createElement("button");
-    discardBtn.className = "btn btn-secondary";
-    discardBtn.textContent = "Discard";
-    discardBtn.onclick = renderIdle;
-
-    const sendBtn = document.createElement("button");
-    sendBtn.className = "btn btn-primary";
-    sendBtn.textContent = "Send it";
-    sendBtn.onclick = sendRecording;
-
-    row.appendChild(discardBtn);
-    row.appendChild(sendBtn);
-
-    const hint = document.createElement("div");
-    hint.className = "hint";
-    hint.textContent = "Give it a listen, then send or record again";
-
-    stage.appendChild(audio);
-    stage.appendChild(row);
-    stage.appendChild(hint);
+  function onMicError() {
+    clearInterval(countdownTimer);
+    showAnchor("couldn't access your mic — check permissions and try again", true);
+    revertTimer = setTimeout(goIdle, 3200);
+    state = "error";
   }
 
-  function renderSending() {
-    stage.querySelectorAll(".btn").forEach((b) => (b.disabled = true));
-    setStatus("Sending...");
-  }
-
-  function renderSent() {
-    stage.innerHTML = "";
-    setStatus("");
-
-    const icon = document.createElement("div");
-    icon.className = "done-icon";
-    icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-
-    const msg = document.createElement("div");
-    msg.textContent = "Sent! Thanks for the message.";
-    msg.style.fontWeight = "600";
-
-    const again = document.createElement("button");
-    again.className = "btn btn-secondary";
-    again.style.marginTop = "8px";
-    again.textContent = "Record another";
-    again.onclick = renderIdle;
-
-    stage.appendChild(icon);
-    stage.appendChild(msg);
-    stage.appendChild(again);
-  }
-
-  async function startRecording() {
-    setStatus("");
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch (err) {
-      setStatus("Couldn't access the microphone. Check your browser's permission settings and try again.", "error");
+  function beginRecording(mediaStream) {
+    if (state !== "countdown") {
+      // user backed out or something else changed state while we waited on permission
+      mediaStream.getTracks().forEach((t) => t.stop());
       return;
     }
-
+    stream = mediaStream;
     mimeType = pickMimeType();
     try {
       mediaRecorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
     } catch (err) {
-      setStatus("Recording isn't supported in this browser. Try Chrome or Safari.", "error");
       stream.getTracks().forEach((t) => t.stop());
+      showAnchor("recording isn't supported in this browser", true);
+      revertTimer = setTimeout(goIdle, 3200);
+      state = "error";
       return;
     }
 
     chunks = [];
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data && e.data.size > 0) chunks.push(e.data);
-    };
+    mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) chunks.push(e.data); };
     mediaRecorder.onstop = () => {
-      clearInterval(timerInterval);
       stream.getTracks().forEach((t) => t.stop());
       recordedBlob = new Blob(chunks, { type: mediaRecorder.mimeType || mimeType || "audio/webm" });
-      renderPreview();
+      enterPreview();
     };
 
     mediaRecorder.start();
-    renderRecording();
+    state = "recording";
+    showAnchor("recording in progress.<br>click to hang up");
   }
 
   function stopRecording() {
@@ -362,46 +344,85 @@
     }
   }
 
-  function extFromMime(type) {
-    if (type.includes("mp4")) return "m4a";
-    if (type.includes("ogg")) return "ogg";
-    return "webm";
+  function enterPreview() {
+    state = "preview";
+    const url = URL.createObjectURL(recordedBlob);
+    previewAudio.src = url;
+
+    anchorBox.innerHTML = `
+      <div class="player-row">
+        <button class="play-btn" id="playBtn" aria-label="play">&#9654;</button>
+        <input class="scrub" id="scrub" type="range" min="0" max="100" value="0">
+        <span class="time-label" id="timeLabel">0:00</span>
+      </div>
+      <div class="preview-actions">
+        <button id="discardBtn">discard</button>
+        <button id="sendBtn">send it</button>
+      </div>
+    `;
+    anchorBox.classList.remove("error");
+    anchorBox.classList.add("show");
+
+    const playBtn = document.getElementById("playBtn");
+    const scrub = document.getElementById("scrub");
+    const timeLabel = document.getElementById("timeLabel");
+
+    playBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (previewAudio.paused) { previewAudio.play(); playBtn.innerHTML = "&#10073;&#10073;"; }
+      else { previewAudio.pause(); playBtn.innerHTML = "&#9654;"; }
+    };
+    previewAudio.ontimeupdate = () => {
+      if (previewAudio.duration) scrub.value = (previewAudio.currentTime / previewAudio.duration) * 100;
+      timeLabel.textContent = fmtTime(previewAudio.currentTime);
+    };
+    previewAudio.onended = () => { playBtn.innerHTML = "&#9654;"; };
+    scrub.oninput = (e) => {
+      e.stopPropagation();
+      if (previewAudio.duration) previewAudio.currentTime = (scrub.value / 100) * previewAudio.duration;
+    };
+    scrub.onclick = (e) => e.stopPropagation();
+
+    document.getElementById("discardBtn").onclick = (e) => { e.stopPropagation(); goIdle(); };
+    document.getElementById("sendBtn").onclick = (e) => { e.stopPropagation(); sendRecording(); };
   }
 
   async function sendRecording() {
     if (!recordedBlob) return;
-    renderSending();
+    state = "sending";
+    showAnchor("sending...");
 
     const ext = extFromMime(recordedBlob.type || "");
     const filename = "msg-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8) + "." + ext;
 
     try {
-      const res = await fetch(
-        SUPABASE_URL + "/storage/v1/object/" + BUCKET + "/" + filename,
-        {
-          method: "POST",
-          headers: {
-            apikey: SUPABASE_ANON_KEY,
-            Authorization: "Bearer " + SUPABASE_ANON_KEY,
-            "Content-Type": recordedBlob.type || "application/octet-stream",
-          },
-          body: recordedBlob,
-        }
-      );
+      const res = await fetch(SUPABASE_URL + "/storage/v1/object/" + BUCKET + "/" + filename, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: "Bearer " + SUPABASE_ANON_KEY,
+          "Content-Type": recordedBlob.type || "application/octet-stream",
+        },
+        body: recordedBlob,
+      });
+      if (!res.ok) throw new Error("upload failed: " + res.status);
 
-      if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error("Upload failed (" + res.status + ") " + text);
-      }
-
-      renderSent();
+      state = "sent";
+      showAnchor("sent! thanks 🥰");
+      revertTimer = setTimeout(goIdle, 2000);
     } catch (err) {
-      setStatus("Something went wrong sending your message. Mind trying again?", "error");
-      renderPreview();
+      showAnchor("something went wrong — try again?", true);
+      revertTimer = setTimeout(() => { if (recordedBlob) enterPreview(); else goIdle(); }, 2400);
     }
   }
 
-  renderIdle();
+  phoneWrap.addEventListener("click", () => {
+    if (state === "idle") { startFlow(); return; }
+    if (state === "recording") { stopRecording(); return; }
+    // countdown / preview / sending / sent / error: clicks on the phone itself do nothing extra
+  });
+
+  goIdle();
 })();
 </script>
 </body>
