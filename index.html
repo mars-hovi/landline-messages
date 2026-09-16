@@ -412,12 +412,29 @@
   }
 
   // ---------- cursor-following tooltip (idle, hover-capable devices) ----------
+  // Only ever shown once the pointer has genuinely traveled a few px, never
+  // from mouseenter (which can fire "for free" from a layout change under an
+  // already-stationary cursor, e.g. the pill shrinking away right under your
+  // mouse after you hit send) and never from the sub-pixel jitter a trackpad
+  // click itself can produce. goIdle() freezes the cursor's position each
+  // time it runs; the tooltip stays hidden until the pointer moves away from
+  // that frozen spot by more than MOUSE_MOVE_THRESHOLD.
+  const MOUSE_MOVE_THRESHOLD = 6;
+  let lastMouseX = null, lastMouseY = null;
+  let frozenMouseX = null, frozenMouseY = null;
+  document.addEventListener("mousemove", (e) => {
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+  });
   if (canHover) {
-    phoneWrap.addEventListener("mouseenter", () => {
-      if (state === "idle") cursorTip.classList.add("show");
-    });
     phoneWrap.addEventListener("mousemove", (e) => {
       if (state !== "idle") return;
+      if (frozenMouseX !== null) {
+        const moved = Math.hypot(e.clientX - frozenMouseX, e.clientY - frozenMouseY);
+        if (moved < MOUSE_MOVE_THRESHOLD) return;
+        frozenMouseX = null;
+      }
+      cursorTip.classList.add("show");
       cursorTip.style.transform = `translate(${e.clientX + ANCHOR_OFFSET}px, ${e.clientY + ANCHOR_OFFSET}px)`;
     });
     phoneWrap.addEventListener("mouseleave", () => {
@@ -468,6 +485,8 @@
     recordedBlob = null;
     previewAudio.pause();
     previewAudio.removeAttribute("src");
+    frozenMouseX = lastMouseX;
+    frozenMouseY = lastMouseY;
     if (!canHover) mobileHint.classList.add("show");
   }
 
