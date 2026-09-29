@@ -195,6 +195,21 @@
 
   .anchor-box.error { color: #a5271c; }
 
+  /* Playback pill only (.preview, added in enterPreview()) — every other
+     .anchor-box state (countdown/recording/error) keeps the base padding
+     (7px 13px, above) since it's a different content shape. Verified in
+     the browser that top/right/bottom at a literal 6px each is genuinely
+     concentric with sendBtn's circle (same center point, radius difference
+     = 6px in every direction) — but it still doesn't *read* as even,
+     because the top/bottom gaps sit against the pill's flat edges while
+     the right gap sits against its curved rounded-cap edge, and a curve
+     reads as more space than a straight edge at the same literal distance.
+     Right is pulled in to 4px as an optical correction so it looks like it
+     matches the true 6px top/bottom, rather than actually equaling it. */
+  .anchor-box.preview {
+    padding: 6px 4px 6px 12px;
+  }
+
   /* Countdown state is distinguished from "live" only by the lighter red
      dot (.rec-dot vs .rec-dot.blink) — the pill itself stays the same
      white as every other state, for consistent text contrast throughout. */
@@ -224,7 +239,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    width: 220px;
+    width: min(280px, calc(100vw - 64px));
   }
   .play-btn {
     flex: none;
@@ -270,16 +285,12 @@
     pointer-events: auto;
   }
   .time-label {
-    flex: none;
-    font-size: 0.68rem;
-    color: #6b6459;
-    font-weight: 500;
-    min-width: 28px;
+    display: none;
   }
   #sendBtn {
     flex: none;
-    width: 26px;
-    height: 26px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     border: none;
     background: #e8291a;
@@ -292,7 +303,10 @@
   }
   #discardBtn {
     flex: none;
-    background: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #ececec;
     border: none;
     padding: 0;
     color: #2b2620;
@@ -352,35 +366,6 @@
     .copy-secondary { width: 300px; max-width: 100%; }
     .copy ol { margin-top: 4px; }
     .copy li { margin-bottom: 2px; }
-
-    /* Preview player: discard becomes a plain circular "x" in a light-gray
-       pill instead of the desktop trash can — matching sendBtn's own
-       circular size — and sits right next to sendBtn (8px gap, same as
-       every other player-row gap) since that's already its source-order
-       position (play, scrub, [hidden time-label], discard, send) with no
-       CSS order override needed. Time label is dropped to match the
-       reference; scrub bar (flex:1 already) absorbs the freed-up space
-       automatically. player-row widens from desktop's 220px so the bar
-       reads as the long, prominent bar in the reference rather than a
-       cramped leftover between two bigger circles. Both circles are
-       bigger than desktop (32px vs 26px), with matching 18px icons (see
-       SEND_ICON_MOBILE/X_ICON in enterPreview()). */
-    .player-row { width: min(280px, calc(100vw - 64px)); }
-    .time-label { display: none; }
-    #discardBtn, #sendBtn {
-      width: 32px;
-      height: 32px;
-    }
-    /* Playback pill only (.preview, added in enterPreview()) — every other
-       .anchor-box state (countdown/recording/error) keeps the shared base
-       padding (7px 13px). */
-    .anchor-box.preview {
-      padding: 6px 6px 6px 12px;
-    }
-    #discardBtn {
-      border-radius: 50%;
-      background: #ececec;
-    }
   }
 </style>
 </head>
@@ -683,19 +668,8 @@
 
     const PLAY_ICON = '<svg viewBox="0 0 16 16" width="12" height="12"><polygon points="2,1 14,8 2,15" fill="currentColor"/></svg>';
     const PAUSE_ICON = '<svg viewBox="0 0 16 16" width="12" height="12"><rect x="2" y="1" width="4" height="14" fill="currentColor"/><rect x="10" y="1" width="4" height="14" fill="currentColor"/></svg>';
-    const SEND_ICON = '<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="2" x2="7" y2="9"/><polygon points="14 2 9 14 7 9 2 7 14 2"/></svg>';
-    const SEND_ICON_MOBILE = '<svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="2" x2="7" y2="9"/><polygon points="14 2 9 14 7 9 2 7 14 2"/></svg>';
-    const TRASH_ICON = '<svg viewBox="0 0 16 16" width="14" height="14"><path d="M2.5 4h11M6 4V2.3c0-.4.3-.7.7-.7h2.6c.4 0 .7.3.7.7V4M3.5 4l.7 9.6c0 .5.5.9 1 .9h5.6c.5 0 .9-.4 1-.9l.7-9.6" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const SEND_ICON = '<svg viewBox="0 0 16 16" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><line x1="14" y1="2" x2="7" y2="9"/><polygon points="14 2 9 14 7 9 2 7 14 2"/></svg>';
     const X_ICON = '<svg viewBox="0 0 16 16" width="18" height="18"><path d="M3 3l10 10M13 3L3 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
-    // Mobile gets a plain circular "x" (matching the reference mockup) in
-    // place of the desktop trash can, styled mobile-only via .player-row
-    // rules — same discard behavior and source position (right before
-    // send) either way, just a different affordance, so desktop is
-    // untouched. Mobile's send/discard circles are also bigger (32px vs
-    // desktop's 26px, see .player-row rules), so both icons get a
-    // matching mobile-only 18px variant instead of desktop's 12-13px.
-    const discardIcon = isDesktopLayout ? TRASH_ICON : X_ICON;
-    const sendIcon = isDesktopLayout ? SEND_ICON : SEND_ICON_MOBILE;
 
     anchorBox.innerHTML = `
       <div class="player-row">
@@ -705,8 +679,8 @@
           <input class="scrub" id="scrub" type="range" min="0" max="100" value="0">
         </div>
         <span class="time-label" id="timeLabel">0:00</span>
-        <button id="discardBtn" aria-label="discard">${discardIcon}</button>
-        <button id="sendBtn" aria-label="send">${sendIcon}</button>
+        <button id="discardBtn" aria-label="discard">${X_ICON}</button>
+        <button id="sendBtn" aria-label="send">${SEND_ICON}</button>
       </div>
     `;
     anchorBox.classList.remove("error", "countdown");
