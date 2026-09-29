@@ -82,46 +82,34 @@
     }
   }
 
-  /* --- Mobile layout: illustration sits in a box the same width as the
-     copy text column (28px left/right, so it's naturally centered), fixed
-     694px tall, anchored 28px from the viewport BOTTOM (not positioned
-     relative to the text above it) — so the phone stays in a consistent,
-     always-visible spot regardless of how many lines the copy wraps to on
-     a given width, rather than needing to track the text's rendered height
-     the way an under-the-text placement would. Since 694 is much taller
-     relative to that width than the artwork's own 1119:1041 ratio,
-     object-fit:cover crops it — center horizontally, bottom vertically
-     (object-position), so it's the top of the illustration (flower tops)
-     that gets cropped, never the phone/table.
-     .hit-area's fixed left/top/width/height below are just an initial
-     fallback (the JS positionMobileArt() computes the real crop-aware
-     values, since a plain fraction-of-box doesn't account for cover
-     cropping a different amount at every viewport width).
-     --mobile-edge-gap mirrors desktop's --edge-gap: beyond a 480px-wide
-     phone/small-tablet, both the image and copy (further down) stop
-     spreading apart and the whole mobile composition centers instead —
-     assumed cutoff, adjust if you want a different "larger screen" width.
-     --mobile-box-w caches the box's own width for that same centering. */
+  /* --- Mobile layout: illustration is full-bleed — 100vw wide, no crop
+     (no object-fit, just the artwork's own 1119:1041 ratio via height:auto,
+     so height = 100vw * 1041/1119 = 93.0295vw), anchored flush to the
+     viewport bottom, no margin on any side. Note: --mobile-edge-gap (the
+     "center everything on a larger screen" cap) intentionally does NOT
+     apply here — the image stays edge-to-edge at any width, since a
+     "full-bleed, no margin" image is a contradiction with an inset cap.
+     .hit-area is the red phone's bounding box (measured from the asset,
+     unioned across idle/hover, +2% padding) expressed as a fraction of the
+     image, in vw units so it stays pixel-locked to the phone at any width:
+     top = (100vh - image height) + (phone's fraction into that height). */
   @media (max-width: 600px) {
     :root {
       --mobile-edge-gap: max(0px, (100vw - 480px) / 2);
-      --mobile-box-w: calc(100vw - (var(--mobile-edge-gap) * 2) - 56px);
     }
     .phone-img {
       top: auto;
-      bottom: 28px;
-      left: calc(var(--mobile-edge-gap) + 28px);
-      right: auto;
-      width: var(--mobile-box-w);
-      height: 694px;
-      object-fit: cover;
-      object-position: center bottom;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100vw;
+      height: auto;
     }
     .hit-area {
-      left: calc(var(--mobile-edge-gap) + 28px + (var(--mobile-box-w) * 0.3741));
-      top: calc(100vh - 28px - 694px + (694px * 0.3575));
-      width: calc(var(--mobile-box-w) * 0.3608);
-      height: calc(694px * 0.3119);
+      left: 37.41vw;
+      top: calc(100vh - 59.7714vw);
+      width: 36.08vw;
+      height: 29.0159vw;
     }
     .mobile-hint {
       display: none !important;
@@ -148,8 +136,8 @@
     pointer-events: none;
     z-index: 5;
   }
-  .copy p { margin: 0 0 22px; }
-  .copy p:last-of-type { margin-bottom: 0; }
+  .copy > p { margin: 0 0 22px; }
+  .copy-secondary p { margin: 0; }
   .copy strong { font-weight: 700; }
   .copy em { font-style: italic; }
   .copy ol { margin: 8px 0 0; padding-left: 22px; }
@@ -366,7 +354,10 @@
        14px font, 40px between the intro paragraph and the "how to leave a
        message" block. line-height tightened from the desktop base (1.5,
        which pushed the block past the image's 338px top on common widths
-       like 375px, overlapping the illustration) to 1.35. */
+       like 375px, overlapping the illustration) to 1.35.
+       .copy-secondary (the "how to leave a message" heading + list) is
+       narrower (260px) than the intro paragraph so it doesn't run into the
+       full-bleed image's flower artwork on the right. */
     .copy {
       top: 66px;
       left: calc(var(--mobile-edge-gap) + 28px);
@@ -376,7 +367,8 @@
       font-size: 14px;
       line-height: 1.3;
     }
-    .copy p { margin: 0 0 40px; }
+    .copy > p { margin: 0 0 40px; }
+    .copy-secondary { width: 260px; max-width: 100%; }
     .copy ol { margin-top: 4px; }
     .copy li { margin-bottom: 2px; }
   }
@@ -390,11 +382,13 @@
 
   <div class="copy">
     <p>i turned a landline phone into my new alarm clock. every morning, my phone rings and i need to physically get out of bed and pick it up to turn it off. once i pick up the phone, a randomly selected message from one of my friends (aka you) plays so i can start my day all happy and stuff.</p>
-    <p><strong>how to leave a message:</strong> you have two fun options to join the rotation of morning messages:</p>
-    <ol>
-      <li>come to my actual physical irl room and <em>dial 9</em> on the landline to record a message</li>
-      <li>come to my online room that i drew for you here and pick up the phone to record a message</li>
-    </ol>
+    <div class="copy-secondary">
+      <p><strong>how to leave a message:</strong> you have two fun options to join the rotation of morning messages:</p>
+      <ol>
+        <li>come to my actual physical irl room and <em>dial 9</em> on the landline to record a message</li>
+        <li>come to my online room that i drew for you here and pick up the phone to record a message</li>
+      </ol>
+    </div>
   </div>
 
   <div class="anchor-box" id="anchorBox"></div>
@@ -435,36 +429,6 @@
   const previewAudio = document.getElementById("previewAudio");
 
   const canHover = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-
-  // Mobile only: .phone-img is bottom-anchored via CSS (bottom:28px,
-  // fixed 694px height) rather than positioned relative to the text above
-  // it, specifically so the phone stays in a consistent spot regardless of
-  // how many lines the copy wraps to at a given width — no JS needed for
-  // that part. What CSS can't express is the hit-area: the box is a fixed
-  // 694px tall with object-fit:cover (object-position center bottom), so
-  // it's always taller relative to its width than the artwork's native
-  // 1119:1041 ratio — meaning cover always scales off height, crops only
-  // horizontally (centered), and never crops vertically. PHONE_NATURAL is
-  // the red phone's bounding box in the artwork's own native pixels
-  // (unioned across idle/hover, +2% padding); mapping it through that same
-  // crop gives the hit-area's real on-screen position at any viewport
-  // width, which a flat CSS fraction-of-box can't (the crop amount itself
-  // changes with box width).
-  const PHONE_NATURAL = { left: 418.6, top: 372.2, right: 822.4, bottom: 696.8 };
-  const NATURAL_W = 1119, NATURAL_H = 1041;
-  function positionMobileArt() {
-    if (isDesktopLayout) return;
-    const r = phoneImg.getBoundingClientRect(); // width = box width, height = 694 (fixed)
-    const scale = r.height / NATURAL_H;
-    const visibleNaturalW = r.width / scale;
-    const cropLeft = (NATURAL_W - visibleNaturalW) / 2;
-    const toX = (nx) => r.left + (nx - cropLeft) * scale;
-    const toY = (ny) => r.top + ny * scale;
-    phoneWrap.style.left = toX(PHONE_NATURAL.left) + "px";
-    phoneWrap.style.top = toY(PHONE_NATURAL.top) + "px";
-    phoneWrap.style.width = (toX(PHONE_NATURAL.right) - toX(PHONE_NATURAL.left)) + "px";
-    phoneWrap.style.height = (toY(PHONE_NATURAL.bottom) - toY(PHONE_NATURAL.top)) + "px";
-  }
 
   let state = "idle"; // idle | countdown | recording | preview | sending | sent | error
   let mediaRecorder = null;
@@ -844,9 +808,6 @@
   document.addEventListener("click", hangUp);
 
   goIdle();
-  positionMobileArt();
-  phoneImg.addEventListener("load", positionMobileArt);
-  window.addEventListener("resize", positionMobileArt);
 })();
 </script>
 </body>
