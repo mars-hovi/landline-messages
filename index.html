@@ -8,7 +8,17 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  :root { color-scheme: light; }
+  :root {
+    color-scheme: light;
+    /* One reference px (of a 1728 x 1123.87 design frame — validated against
+       the copy block's own 150/180/634 spec) expressed as whichever of vw or
+       vh is smaller. This is "contain" scaling, not width-only scaling: on a
+       browser window that's proportionally wider/shorter than the design
+       frame, sizing off vw alone would let the illustration overflow the
+       frame's intended height and read as oversized — min() caps it against
+       vh too, so it always scales down to fit both dimensions at once. */
+    --s: min(0.057870vw, 0.088979vh);
+  }
   * { box-sizing: border-box; }
   html, body {
     margin: 0;
@@ -23,12 +33,12 @@
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpolygon points='2,2 2,18 14,13' fill='white' stroke='black' stroke-width='1.2' stroke-linejoin='round'/%3E%3C/svg%3E") 2 2, pointer;
   }
 
-  /* Illustration is positioned/scaled from a 1728px-wide design reference —
-     a Figma frame of 2096.43 x 1456.84 anchored at (-212, -142), i.e. it
+  /* Illustration is positioned/scaled from the design frame (see --s above)
+     — a Figma frame of 2096.43 x 1456.84 anchored at (-212, -142), i.e. it
      intentionally bleeds off the top and left edges. Everything here (width,
-     left, top) is expressed in vw off that same 1728 reference so the image
-     and the .hit-area below stay pixel-locked to each other at any viewport
-     width — this is a width-driven scale, not a full-bleed cover crop. */
+     left, top) is a multiple of --s so the image and the .hit-area below
+     stay pixel-locked to each other and correctly contain-scaled at any
+     viewport size. */
   .phone-wrap {
     position: fixed;
     inset: 0;
@@ -38,35 +48,34 @@
   .phone-img {
     display: block;
     position: fixed;
-    left: -12.269vw;
-    top: -8.218vw;
-    width: 121.321vw;
+    left: calc(-212 * var(--s));
+    top: calc(-142 * var(--s));
+    width: calc(2096.43 * var(--s));
     height: auto;
   }
 
   /* Invisible region matching where the red phone itself sits in the
      illustration (measured from the asset, unioned across both the idle and
      hover artwork since hovering swaps the image), plus a little padding.
-     Same 1728px-reference vw units as .phone-img above, so it tracks the
-     phone exactly as the page scales. */
+     Same --s scale as .phone-img above, so it tracks the phone exactly. */
   .hit-area {
     position: fixed;
-    left: 52.942vw;
-    top: 22.292vw;
-    width: 31.542vw;
-    height: 25.473vw;
+    left: calc(914.8 * var(--s));
+    top: calc(385.2 * var(--s));
+    width: calc(545.1 * var(--s));
+    height: calc(440.2 * var(--s));
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
 
   /* Copy block — fixed pixel position per spec (does not scale with
-     viewport), Inter 22px. */
+     viewport), Inter 22px, 634px-wide text column. */
   .copy {
     position: fixed;
     top: 180px;
     left: 150px;
-    width: 620px;
-    max-width: calc(100vw - 200px);
+    width: 634px;
+    max-width: calc(100vw - 300px);
     margin: 0;
     color: #2b2620;
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -106,13 +115,13 @@
 
   /* --- Mobile-only "tap to record" hint with a bobbing chevron. Shown
      instead of the hover tooltip on touch devices (no fine pointer).
-     Positioned just above the .hit-area (same vw coordinate system as
-     .phone-img/.hit-area) so it points at the illustrated phone. --- */
+     Positioned just above the .hit-area (same --s scale as .phone-img/
+     .hit-area) so it points at the illustrated phone. --- */
   .mobile-hint {
     display: none;
     position: fixed;
-    left: 68.713vw;
-    top: calc(22.292vw - 34px);
+    left: calc(1187.35 * var(--s));
+    top: calc(385.2 * var(--s) - 34px);
     transform: translate(-50%, -100%);
     text-align: center;
     color: rgba(43, 38, 32, 0.75);
@@ -293,12 +302,12 @@
        the illustration on a narrow screen, and the page has no scroll (see
        html/body overflow:hidden) to reveal anything clipped below the
        viewport — so on mobile the copy moves below the image/table instead
-       (same vw system as .phone-img: image top -8.218vw + height 84.308vw =
-       76.09vw is roughly where the table bottom lands) and shrinks enough
-       to fit the remaining vertical space without scrolling. */
+       (same --s scale as .phone-img: image top -142 + height 1456.84 =
+       1314.84 reference px is where the table bottom lands) and shrinks
+       enough to fit the remaining vertical space without scrolling. */
     .copy {
       left: 24px;
-      top: calc(76.09vw + 20px);
+      top: calc(1314.84 * var(--s) + 20px);
       width: calc(100vw - 48px);
       max-width: none;
       font-size: 15px;
