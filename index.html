@@ -353,18 +353,19 @@
     .copy ol { margin-top: 4px; }
     .copy li { margin-bottom: 2px; }
 
-    /* Preview player: discard button moves to the front (CSS order, so
-       source order/JS wiring stays identical to desktop) and becomes a
-       plain circular "x" in a light-gray pill instead of the desktop
-       trash can — matching sendBtn's own circular size. Time label is
-       dropped to match the reference; scrub bar (flex:1 already) absorbs
-       the freed-up space automatically. player-row widens from desktop's
-       220px so the bar reads as the long, prominent bar in the reference
-       rather than a cramped leftover between two bigger circles. */
+    /* Preview player: discard becomes a plain circular "x" in a light-gray
+       pill instead of the desktop trash can — matching sendBtn's own
+       circular size — and sits right next to sendBtn (8px gap, same as
+       every other player-row gap) since that's already its source-order
+       position (play, scrub, [hidden time-label], discard, send) with no
+       CSS order override needed. Time label is dropped to match the
+       reference; scrub bar (flex:1 already) absorbs the freed-up space
+       automatically. player-row widens from desktop's 220px so the bar
+       reads as the long, prominent bar in the reference rather than a
+       cramped leftover between two bigger circles. */
     .player-row { width: min(280px, calc(100vw - 64px)); }
     .time-label { display: none; }
     #discardBtn {
-      order: -1;
       width: 26px;
       height: 26px;
       border-radius: 50%;
@@ -675,10 +676,10 @@
     const TRASH_ICON = '<svg viewBox="0 0 16 16" width="14" height="14"><path d="M2.5 4h11M6 4V2.3c0-.4.3-.7.7-.7h2.6c.4 0 .7.3.7.7V4M3.5 4l.7 9.6c0 .5.5.9 1 .9h5.6c.5 0 .9-.4 1-.9l.7-9.6" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     const X_ICON = '<svg viewBox="0 0 16 16" width="12" height="12"><path d="M3 3l10 10M13 3L3 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
     // Mobile gets a plain circular "x" (matching the reference mockup) in
-    // place of the desktop trash can, moved to the front via CSS order
-    // (mobile-only, see .player-row rule) — same discard behavior either
-    // way, just a different affordance. Source order stays play/scrub/
-    // time/discard/send for both, so desktop is untouched.
+    // place of the desktop trash can, styled mobile-only via .player-row
+    // rules — same discard behavior and source position (right before
+    // send) either way, just a different affordance, so desktop is
+    // untouched.
     const discardIcon = isDesktopLayout ? TRASH_ICON : X_ICON;
 
     anchorBox.innerHTML = `
