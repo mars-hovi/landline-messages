@@ -82,26 +82,49 @@
     }
   }
 
-  /* --- Mobile layout: illustration positioned/scaled from the 1728 x
-     1123.87 design frame (see --s above) — a Figma frame of 2096.43 x
-     1456.84 anchored at (-212, -142), i.e. it intentionally bleeds off the
-     top and left edges. Everything here (width, left, top) is a multiple
-     of --s so the image and .hit-area stay pixel-locked to each other and
-     correctly contain-scaled at any viewport size. Kept separate from the
-     desktop rules above since mobile is getting its own artwork/treatment
-     later. */
+  /* --- Mobile layout: illustration sits in a box the same width as the
+     copy text column (28px left/right, so it's naturally centered), fixed
+     694px tall, anchored 28px from the viewport BOTTOM (not positioned
+     relative to the text above it) — so the phone stays in a consistent,
+     always-visible spot regardless of how many lines the copy wraps to on
+     a given width, rather than needing to track the text's rendered height
+     the way an under-the-text placement would. Since 694 is much taller
+     relative to that width than the artwork's own 1119:1041 ratio,
+     object-fit:cover crops it — center horizontally, bottom vertically
+     (object-position), so it's the top of the illustration (flower tops)
+     that gets cropped, never the phone/table.
+     .hit-area's fixed left/top/width/height below are just an initial
+     fallback (the JS positionMobileArt() computes the real crop-aware
+     values, since a plain fraction-of-box doesn't account for cover
+     cropping a different amount at every viewport width).
+     --mobile-edge-gap mirrors desktop's --edge-gap: beyond a 480px-wide
+     phone/small-tablet, both the image and copy (further down) stop
+     spreading apart and the whole mobile composition centers instead —
+     assumed cutoff, adjust if you want a different "larger screen" width.
+     --mobile-box-w caches the box's own width for that same centering. */
   @media (max-width: 600px) {
+    :root {
+      --mobile-edge-gap: max(0px, (100vw - 480px) / 2);
+      --mobile-box-w: calc(100vw - (var(--mobile-edge-gap) * 2) - 56px);
+    }
     .phone-img {
-      left: calc(-212 * var(--s));
-      top: calc(-142 * var(--s));
-      width: calc(2096.43 * var(--s));
-      height: auto;
+      top: auto;
+      bottom: 28px;
+      left: calc(var(--mobile-edge-gap) + 28px);
+      right: auto;
+      width: var(--mobile-box-w);
+      height: 694px;
+      object-fit: cover;
+      object-position: center bottom;
     }
     .hit-area {
-      left: calc(914.8 * var(--s));
-      top: calc(385.2 * var(--s));
-      width: calc(545.1 * var(--s));
-      height: calc(440.2 * var(--s));
+      left: calc(var(--mobile-edge-gap) + 28px + (var(--mobile-box-w) * 0.3741));
+      top: calc(100vh - 28px - 694px + (694px * 0.3575));
+      width: calc(var(--mobile-box-w) * 0.3608);
+      height: calc(694px * 0.3119);
+    }
+    .mobile-hint {
+      display: none !important;
     }
   }
 
@@ -338,24 +361,24 @@
       transform: translate(-50%, -50%) !important;
     }
 
-    /* The desktop copy block's fixed 150/180px position sits directly under
-       the illustration on a narrow screen, and the page has no scroll (see
-       html/body overflow:hidden) to reveal anything clipped below the
-       viewport — so on mobile the copy moves below the image/table instead
-       (same --s scale as .phone-img: image top -142 + height 1456.84 =
-       1314.84 reference px is where the table bottom lands) and shrinks
-       enough to fit the remaining vertical space without scrolling. */
+    /* Mobile copy: 66px from the top, 28px left/right (same --mobile-edge-gap
+       centering as .phone-img above once a phone/tablet passes 480px wide),
+       14px font, 40px between the intro paragraph and the "how to leave a
+       message" block. line-height tightened from the desktop base (1.5,
+       which pushed the block past the image's 338px top on common widths
+       like 375px, overlapping the illustration) to 1.35. */
     .copy {
-      left: 24px;
-      top: calc(1314.84 * var(--s) + 20px);
-      width: calc(100vw - 48px);
+      top: 66px;
+      left: calc(var(--mobile-edge-gap) + 28px);
+      right: calc(var(--mobile-edge-gap) + 28px);
+      width: auto;
       max-width: none;
-      font-size: 15px;
-      line-height: 1.45;
+      font-size: 14px;
+      line-height: 1.3;
     }
-    .copy p { margin: 0 0 14px; }
-    .copy ol { margin-top: 6px; }
-    .copy li { margin-bottom: 3px; }
+    .copy p { margin: 0 0 40px; }
+    .copy ol { margin-top: 4px; }
+    .copy li { margin-bottom: 2px; }
   }
 </style>
 </head>
@@ -401,8 +424,8 @@
   // artwork; mobile keeps the older design-frame-scaled artwork for now —
   // separate asset pairs so each layout gets art cropped/composed for it.
   const isDesktopLayout = window.matchMedia && window.matchMedia("(min-width: 601px)").matches;
-  function imgIdle() { return isDesktopLayout ? "phone-idle-desktop.png" : "phone-idle.webp"; }
-  function imgActive() { return isDesktopLayout ? "phone-hover-desktop.png" : "phone-hover.webp"; }
+  function imgIdle() { return isDesktopLayout ? "phone-idle-desktop.png" : "phone-idle-mobile.png"; }
+  function imgActive() { return isDesktopLayout ? "phone-hover-desktop.png" : "phone-hover-mobile.png"; }
 
   const phoneWrap = document.getElementById("phoneWrap");
   const phoneImg = document.getElementById("phoneImg");
@@ -412,6 +435,36 @@
   const previewAudio = document.getElementById("previewAudio");
 
   const canHover = window.matchMedia && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+  // Mobile only: .phone-img is bottom-anchored via CSS (bottom:28px,
+  // fixed 694px height) rather than positioned relative to the text above
+  // it, specifically so the phone stays in a consistent spot regardless of
+  // how many lines the copy wraps to at a given width — no JS needed for
+  // that part. What CSS can't express is the hit-area: the box is a fixed
+  // 694px tall with object-fit:cover (object-position center bottom), so
+  // it's always taller relative to its width than the artwork's native
+  // 1119:1041 ratio — meaning cover always scales off height, crops only
+  // horizontally (centered), and never crops vertically. PHONE_NATURAL is
+  // the red phone's bounding box in the artwork's own native pixels
+  // (unioned across idle/hover, +2% padding); mapping it through that same
+  // crop gives the hit-area's real on-screen position at any viewport
+  // width, which a flat CSS fraction-of-box can't (the crop amount itself
+  // changes with box width).
+  const PHONE_NATURAL = { left: 418.6, top: 372.2, right: 822.4, bottom: 696.8 };
+  const NATURAL_W = 1119, NATURAL_H = 1041;
+  function positionMobileArt() {
+    if (isDesktopLayout) return;
+    const r = phoneImg.getBoundingClientRect(); // width = box width, height = 694 (fixed)
+    const scale = r.height / NATURAL_H;
+    const visibleNaturalW = r.width / scale;
+    const cropLeft = (NATURAL_W - visibleNaturalW) / 2;
+    const toX = (nx) => r.left + (nx - cropLeft) * scale;
+    const toY = (ny) => r.top + ny * scale;
+    phoneWrap.style.left = toX(PHONE_NATURAL.left) + "px";
+    phoneWrap.style.top = toY(PHONE_NATURAL.top) + "px";
+    phoneWrap.style.width = (toX(PHONE_NATURAL.right) - toX(PHONE_NATURAL.left)) + "px";
+    phoneWrap.style.height = (toY(PHONE_NATURAL.bottom) - toY(PHONE_NATURAL.top)) + "px";
+  }
 
   let state = "idle"; // idle | countdown | recording | preview | sending | sent | error
   let mediaRecorder = null;
@@ -791,6 +844,9 @@
   document.addEventListener("click", hangUp);
 
   goIdle();
+  positionMobileArt();
+  phoneImg.addEventListener("load", positionMobileArt);
+  window.addEventListener("resize", positionMobileArt);
 })();
 </script>
 </body>
