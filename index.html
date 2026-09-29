@@ -96,6 +96,10 @@
   @media (max-width: 600px) {
     :root {
       --mobile-edge-gap: max(0px, (100vw - 480px) / 2);
+      /* Vertical center of .hit-area (top + height/2), reused below to
+         vertically align the tap pill with the phone regardless of where
+         on the phone the user actually tapped. */
+      --phone-center-y: calc(100vh - 85.8472vw);
     }
     .phone-img {
       top: auto;
@@ -303,14 +307,21 @@
   }
 
   @media (max-width: 600px) {
-    /* On mobile the pill always pops open dead-center on screen instead of
-       at the tap point — a tap near the edge of the phone was pinning it
-       there too, letting it bleed off-screen with the discard/send buttons
-       untappable. */
+    /* On mobile the pill always pops open horizontally centered and
+       vertically centered on the phone itself (--phone-center-y, the red
+       phone's own vertical midpoint — not the exact tap point), instead of
+       pinned to wherever the user actually tapped — a tap near the edge of
+       the phone was pinning it there too, letting it bleed off-screen with
+       the discard/send buttons untappable, and even on-screen it would
+       jump around from tap to tap. Centering on the phone keeps it close
+       to where the user's attention already is without that jitter.
+       max-width takes over from the base 260px only on a viewport under
+       276px wide, so it (and the 8px side margin) always actually holds. */
     .anchor-box {
       left: 50% !important;
-      top: 40% !important;
+      top: var(--phone-center-y) !important;
       transform: translate(-50%, -50%) !important;
+      max-width: min(260px, calc(100vw - 16px)) !important;
     }
 
     /* Mobile copy: 66px from the top, 28px left/right (same --mobile-edge-gap
