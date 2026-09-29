@@ -33,12 +33,6 @@
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpolygon points='2,2 2,18 14,13' fill='white' stroke='black' stroke-width='1.2' stroke-linejoin='round'/%3E%3C/svg%3E") 2 2, pointer;
   }
 
-  /* Illustration is positioned/scaled from the design frame (see --s above)
-     — a Figma frame of 2096.43 x 1456.84 anchored at (-212, -142), i.e. it
-     intentionally bleeds off the top and left edges. Everything here (width,
-     left, top) is a multiple of --s so the image and the .hit-area below
-     stay pixel-locked to each other and correctly contain-scaled at any
-     viewport size. */
   .phone-wrap {
     position: fixed;
     inset: 0;
@@ -48,24 +42,58 @@
   .phone-img {
     display: block;
     position: fixed;
-    left: calc(-212 * var(--s));
-    top: calc(-142 * var(--s));
-    width: calc(2096.43 * var(--s));
-    height: auto;
   }
-
-  /* Invisible region matching where the red phone itself sits in the
-     illustration (measured from the asset, unioned across both the idle and
-     hover artwork since hovering swaps the image), plus a little padding.
-     Same --s scale as .phone-img above, so it tracks the phone exactly. */
   .hit-area {
     position: fixed;
-    left: calc(914.8 * var(--s));
-    top: calc(385.2 * var(--s));
-    width: calc(545.1 * var(--s));
-    height: calc(440.2 * var(--s));
     user-select: none;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* --- Desktop layout: illustration pinned to the right edge, always full
+     viewport height (not scaled off the design frame like mobile below —
+     the newer artwork is meant to simply fill the height and hug the
+     right side at any window size). Since width:auto derives from the
+     image's own 1499:1676 aspect ratio, its rendered width in vh units is
+     100 * (1499/1676) = 89.4391vh — the .hit-area math below is built off
+     that same figure so it stays pixel-locked to the red phone (measured
+     from the asset, unioned across the idle/hover artwork, +2% padding). */
+  @media (min-width: 601px) {
+    .phone-img {
+      right: 0;
+      top: 0;
+      left: auto;
+      height: 100vh;
+      width: auto;
+    }
+    .hit-area {
+      left: calc(100vw - 72.6693vh);
+      top: 34.52vh;
+      width: 48.5028vh;
+      height: 39.5vh;
+    }
+  }
+
+  /* --- Mobile layout: illustration positioned/scaled from the 1728 x
+     1123.87 design frame (see --s above) — a Figma frame of 2096.43 x
+     1456.84 anchored at (-212, -142), i.e. it intentionally bleeds off the
+     top and left edges. Everything here (width, left, top) is a multiple
+     of --s so the image and .hit-area stay pixel-locked to each other and
+     correctly contain-scaled at any viewport size. Kept separate from the
+     desktop rules above since mobile is getting its own artwork/treatment
+     later. */
+  @media (max-width: 600px) {
+    .phone-img {
+      left: calc(-212 * var(--s));
+      top: calc(-142 * var(--s));
+      width: calc(2096.43 * var(--s));
+      height: auto;
+    }
+    .hit-area {
+      left: calc(914.8 * var(--s));
+      top: calc(385.2 * var(--s));
+      width: calc(545.1 * var(--s));
+      height: calc(440.2 * var(--s));
+    }
   }
 
   /* Copy block — fixed pixel position per spec (does not scale with
@@ -321,7 +349,7 @@
 </head>
 <body>
   <div class="phone-wrap">
-    <img class="phone-img" id="phoneImg" src="phone-idle.webp" alt="an illustrated red rotary phone on a side table">
+    <img class="phone-img" id="phoneImg" src="phone-idle-desktop.png" alt="an illustrated red rotary phone on a side table">
   </div>
   <div class="hit-area" id="phoneWrap"></div>
 
@@ -357,8 +385,12 @@
   const SUPABASE_URL = "https://gwnvhgilayzjzkimvmcr.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_NgslFznczZJ3TP4W9K3C_A_521vw2GP";
   const BUCKET = "messages";
-  const IMG_IDLE = "phone-idle.webp";
-  const IMG_ACTIVE = "phone-hover.webp";
+  // Desktop (≥601px, matching the CSS breakpoint) uses the newer full-height
+  // artwork; mobile keeps the older design-frame-scaled artwork for now —
+  // separate asset pairs so each layout gets art cropped/composed for it.
+  const isDesktopLayout = window.matchMedia && window.matchMedia("(min-width: 601px)").matches;
+  function imgIdle() { return isDesktopLayout ? "phone-idle-desktop.png" : "phone-idle.webp"; }
+  function imgActive() { return isDesktopLayout ? "phone-hover-desktop.png" : "phone-hover.webp"; }
 
   const phoneWrap = document.getElementById("phoneWrap");
   const phoneImg = document.getElementById("phoneImg");
@@ -441,11 +473,11 @@
       cursorTip.style.transform = `translate(${e.clientX + ANCHOR_OFFSET}px, ${e.clientY + ANCHOR_OFFSET}px)`;
       // Same "handle up" artwork used while actively recording — hovering
       // previews the phone as if it's about to be picked up.
-      if (phoneImg.getAttribute("src") !== IMG_ACTIVE) phoneImg.src = IMG_ACTIVE;
+      if (phoneImg.getAttribute("src") !== imgActive()) phoneImg.src = imgActive();
     });
     phoneWrap.addEventListener("mouseleave", () => {
       cursorTip.classList.remove("show");
-      if (state === "idle") phoneImg.src = IMG_IDLE;
+      if (state === "idle") phoneImg.src = imgIdle();
     });
   }
 
@@ -487,7 +519,7 @@
   function goIdle() {
     clearTimeout(revertTimer);
     state = "idle";
-    phoneImg.src = IMG_IDLE;
+    phoneImg.src = imgIdle();
     hideAnchor();
     recordedBlob = null;
     previewAudio.pause();
@@ -500,7 +532,7 @@
   function startFlow() {
     if (state !== "idle") return;
     hideCursorTip();
-    phoneImg.src = IMG_ACTIVE;
+    phoneImg.src = imgActive();
     state = "countdown";
 
     // Ask for mic access right away so it's (hopefully) resolved by the time the countdown ends.
