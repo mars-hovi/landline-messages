@@ -387,12 +387,10 @@
 
 <script>
 (function () {
-  // TEMP: UI-testing mode — skips real mic access/recording entirely so the
-  // countdown, "recording in progress" (with the pulsing dot), and the
-  // click-to-end-the-call interaction can be previewed without a mic
-  // permission prompt or Supabase upload. Set to false to restore real
-  // recording before this goes live for friends.
-  const DEMO_MODE = true;
+  // Real mic access + real Supabase uploads. (Was true during UI-only
+  // testing to skip the mic prompt/upload — set back to true if you ever
+  // need to preview interaction changes without recording real audio.)
+  const DEMO_MODE = false;
 
   const SUPABASE_URL = "https://gwnvhgilayzjzkimvmcr.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_NgslFznczZJ3TP4W9K3C_A_521vw2GP";
