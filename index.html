@@ -6,7 +6,7 @@
 <title>Leave a message</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400&family=Lobster&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
@@ -14,7 +14,7 @@
     margin: 0;
     height: 100%;
     overflow: hidden;
-    background: #c22029;
+    background: #f4f0e7;
   }
   body {
     position: relative;
@@ -23,87 +23,65 @@
     cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='22' viewBox='0 0 22 22'%3E%3Cpolygon points='2,2 2,18 14,13' fill='white' stroke='black' stroke-width='1.2' stroke-linejoin='round'/%3E%3C/svg%3E") 2 2, pointer;
   }
 
-  /* Phone always fully covers the viewport — true full-bleed, cropped as
-     needed so no background ever shows behind it, at any screen size.
-     Purely visual now — the click/hover behavior lives on .hit-area below. */
+  /* Illustration is positioned/scaled from a 1728px-wide design reference —
+     a Figma frame of 2096.43 x 1456.84 anchored at (-212, -142), i.e. it
+     intentionally bleeds off the top and left edges. Everything here (width,
+     left, top) is expressed in vw off that same 1728 reference so the image
+     and the .hit-area below stay pixel-locked to each other at any viewport
+     width — this is a width-driven scale, not a full-bleed cover crop. */
   .phone-wrap {
     position: fixed;
     inset: 0;
+    overflow: hidden;
+    pointer-events: none;
   }
   .phone-img {
     display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
+    position: fixed;
+    left: -12.269vw;
+    top: -8.218vw;
+    width: 121.321vw;
+    height: auto;
   }
 
-  /* Invisible region matching where the phone itself sits in the photo
-     (measured from the image), stopping right above the pedestal top so the
-     pedestal isn't part of the hoverable/clickable area. */
+  /* Invisible region matching where the red phone itself sits in the
+     illustration (measured from the asset, unioned across both the idle and
+     hover artwork since hovering swaps the image), plus a little padding.
+     Same 1728px-reference vw units as .phone-img above, so it tracks the
+     phone exactly as the page scales. */
   .hit-area {
     position: fixed;
-    left: calc(23% - 24px);
-    top: calc(46% - 24px);
-    right: calc(28% - 24px);
-    bottom: calc(36% - 24px);
+    left: 52.942vw;
+    top: 22.292vw;
+    width: 31.542vw;
+    height: 25.473vw;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Header + subtext overlay, positioned from a 1728x1117 design reference
-     (header 150px from top, 180px Lobster; subtext 24px below, 24px Inter).
-     Font sizes use standard fluid-type interpolation (clamp with a linear
-     px+vw ramp) between a 375px mobile floor and the 1728px desktop
-     reference, so they scale smoothly at every width in between instead of
-     jumping straight to a flat minimum on phones. Formula: at viewport W,
-     size = min + (max-min) * (W-375)/(1728-375), clamped to [min, max]. */
-  .header {
+  /* Copy block — fixed pixel position per spec (does not scale with
+     viewport), Inter 22px. */
+  .copy {
     position: fixed;
-    top: 13.43vh;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 92vw;
+    top: 180px;
+    left: 150px;
+    width: 620px;
+    max-width: calc(100vw - 200px);
     margin: 0;
-    color: #fff;
-    text-align: center;
-    font-family: "Lobster", cursive;
-    font-weight: 400;
-    font-size: clamp(46px, 8.86px + 9.904vw, 180px);
-    line-height: 1.1;
-    pointer-events: none;
-    z-index: 5;
-  }
-  .subtext {
-    position: fixed;
-    top: calc(13.43vh + clamp(46px, 8.86px + 9.904vw, 180px) * 1.1 + clamp(12px, 2.15vh, 24px));
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90vw;
-    max-width: 600px;
-    margin: 0;
-    color: #fff;
-    text-align: center;
+    color: #2b2620;
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-weight: 400;
-    font-size: clamp(14px, 11.23px + 0.739vw, 24px);
-    line-height: 1.4;
+    font-size: 22px;
+    line-height: 1.5;
     pointer-events: none;
     z-index: 5;
   }
-
-  /* Desktop only: header pinned a fixed 64px from the top (instead of the
-     vh-based offset used on mobile) so it never drifts down into the phone
-     on short/wide windows, and the subtext stays on one line, no wrap. */
-  @media (min-width: 601px) {
-    .header { top: 32px; }
-    .subtext {
-      top: calc(32px + clamp(46px, 8.86px + 9.904vw, 180px) * 1.1 + clamp(12px, 2.15vh, 24px));
-      width: auto;
-      max-width: 92vw;
-      white-space: nowrap;
-    }
-  }
+  .copy p { margin: 0 0 22px; }
+  .copy p:last-of-type { margin-bottom: 0; }
+  .copy strong { font-weight: 700; }
+  .copy em { font-style: italic; }
+  .copy ol { margin: 8px 0 0; padding-left: 22px; }
+  .copy li { margin-bottom: 4px; }
 
   /* --- Tooltip that follows the cursor while idle --- */
   .cursor-tip {
@@ -127,15 +105,17 @@
   .cursor-tip.show { opacity: 1; }
 
   /* --- Mobile-only "tap to record" hint with a bobbing chevron. Shown
-     instead of the hover tooltip on touch devices (no fine pointer). --- */
+     instead of the hover tooltip on touch devices (no fine pointer).
+     Positioned just above the .hit-area (same vw coordinate system as
+     .phone-img/.hit-area) so it points at the illustrated phone. --- */
   .mobile-hint {
     display: none;
     position: fixed;
-    left: 50%;
-    top: 40%;
-    transform: translateX(-50%);
+    left: 68.713vw;
+    top: calc(22.292vw - 34px);
+    transform: translate(-50%, -100%);
     text-align: center;
-    color: rgba(255, 255, 255, 0.75);
+    color: rgba(43, 38, 32, 0.75);
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-style: italic;
     font-weight: 400;
@@ -153,8 +133,8 @@
     transform: scale(0.9);
   }
   @keyframes hintBob {
-    0%, 100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(6px); }
+    0%, 100% { transform: translate(-50%, -100%) translateY(0); }
+    50% { transform: translate(-50%, -100%) translateY(6px); }
   }
 
   /* --- Anchored bubble once recording flow has started ---
@@ -298,18 +278,7 @@
     .anchor-box { font-size: 0.72rem; }
   }
 
-  /* Mobile only: header/subtext pinned a fixed 44px from the top (same
-     idea as the desktop 64px override), 64px side margins on the subtext,
-     and a bit of extra width margin on the header so Lobster's swashy
-     descenders/tails (e.g. the "d" in "record") have room and don't get
-     clipped by the viewport edge. */
   @media (max-width: 600px) {
-    .header { top: 44px; width: 85vw; }
-    .subtext {
-      top: calc(44px + clamp(46px, 8.86px + 9.904vw, 180px) * 1.1 + clamp(12px, 2.15vh, 24px));
-      width: calc(100vw - 128px);
-    }
-
     /* On mobile the pill always pops open dead-center on screen (same spot
        as the "tap to record" hint it replaces) instead of at the tap
        point — a tap near the edge of the phone was pinning it there too,
@@ -319,17 +288,42 @@
       top: 40% !important;
       transform: translate(-50%, -50%) !important;
     }
+
+    /* The desktop copy block's fixed 150/180px position sits directly under
+       the illustration on a narrow screen, and the page has no scroll (see
+       html/body overflow:hidden) to reveal anything clipped below the
+       viewport — so on mobile the copy moves below the image/table instead
+       (same vw system as .phone-img: image top -8.218vw + height 84.308vw =
+       76.09vw is roughly where the table bottom lands) and shrinks enough
+       to fit the remaining vertical space without scrolling. */
+    .copy {
+      left: 24px;
+      top: calc(76.09vw + 20px);
+      width: calc(100vw - 48px);
+      max-width: none;
+      font-size: 15px;
+      line-height: 1.45;
+    }
+    .copy p { margin: 0 0 14px; }
+    .copy ol { margin-top: 6px; }
+    .copy li { margin-bottom: 3px; }
   }
 </style>
 </head>
 <body>
   <div class="phone-wrap">
-    <img class="phone-img" id="phoneImg" src="phone.jpg" alt="a red rotary phone on a pedestal">
+    <img class="phone-img" id="phoneImg" src="phone-idle.webp" alt="an illustrated red rotary phone on a side table">
   </div>
   <div class="hit-area" id="phoneWrap"></div>
 
-  <h1 class="header">leave a message</h1>
-  <p class="subtext">record a lil voicemail for my alarm to play at the start each day!</p>
+  <div class="copy">
+    <p>i turned a landline phone into my new alarm clock. every morning, my phone rings and i need to physically get out of bed and pick it up to turn it off. once i pick up the phone, a randomly selected message from my friends (aka you) plays so i can start my day all happy and stuff.</p>
+    <p><strong>how to leave a message:</strong> you have two fun options to join the rotation of morning messages:</p>
+    <ol>
+      <li>come to my actual physical irl room and <em>dial 9</em> on the landline to record a message</li>
+      <li>come to my online room that i drew for you here and pick up the phone to record a message</li>
+    </ol>
+  </div>
 
   <div class="anchor-box" id="anchorBox"></div>
 
@@ -354,8 +348,8 @@
   const SUPABASE_URL = "https://gwnvhgilayzjzkimvmcr.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_NgslFznczZJ3TP4W9K3C_A_521vw2GP";
   const BUCKET = "messages";
-  const IMG_IDLE = "phone.jpg";
-  const IMG_ACTIVE = "phone.jpg";
+  const IMG_IDLE = "phone-idle.webp";
+  const IMG_ACTIVE = "phone-hover.webp";
 
   const phoneWrap = document.getElementById("phoneWrap");
   const phoneImg = document.getElementById("phoneImg");
@@ -436,9 +430,13 @@
       }
       cursorTip.classList.add("show");
       cursorTip.style.transform = `translate(${e.clientX + ANCHOR_OFFSET}px, ${e.clientY + ANCHOR_OFFSET}px)`;
+      // Same "handle up" artwork used while actively recording — hovering
+      // previews the phone as if it's about to be picked up.
+      if (phoneImg.getAttribute("src") !== IMG_ACTIVE) phoneImg.src = IMG_ACTIVE;
     });
     phoneWrap.addEventListener("mouseleave", () => {
       cursorTip.classList.remove("show");
+      if (state === "idle") phoneImg.src = IMG_IDLE;
     });
   }
 
