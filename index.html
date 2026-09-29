@@ -18,6 +18,13 @@
        frame's intended height and read as oversized — min() caps it against
        vh too, so it always scales down to fit both dimensions at once. */
     --s: min(0.057870vw, 0.088979vh);
+    /* On a viewport wider than 1728px, this is the gap between the real
+       viewport edge and the edge of a virtual 1728px-wide centered canvas —
+       0 at 1728px and below. Both the desktop illustration (pinned to the
+       canvas's right edge) and the copy block (pinned to its left edge)
+       are offset by this so the whole composition stops sliding apart and
+       instead holds its 1728px-designed layout, centered, on wide screens. */
+    --edge-gap: max(0px, (100vw - 1728px) / 2);
   }
   * { box-sizing: border-box; }
   html, body {
@@ -59,14 +66,14 @@
      from the asset, unioned across the idle/hover artwork, +2% padding). */
   @media (min-width: 601px) {
     .phone-img {
-      right: 0;
+      right: var(--edge-gap);
       top: 0;
       left: auto;
       height: 100vh;
       width: auto;
     }
     .hit-area {
-      left: calc(100vw - 67.9022vh);
+      left: calc(100vw - var(--edge-gap) - 67.9022vh);
       top: 34.69vh;
       width: 38.5483vh;
       height: 31.69vh;
@@ -98,11 +105,13 @@
 
   /* Copy block — fixed pixel position per spec (does not scale with
      viewport), Inter 16px, 600px-wide text column. Left margin matches
-     the top margin (150px) so the block is evenly inset from the corner. */
+     the top margin (150px) so the block is evenly inset from the corner.
+     left also carries --edge-gap so it holds its position relative to the
+     illustration once the viewport passes 1728px (see --edge-gap above). */
   .copy {
     position: fixed;
     top: 150px;
-    left: 150px;
+    left: calc(var(--edge-gap) + 150px);
     width: 600px;
     max-width: calc(100vw - 300px);
     margin: 0;
