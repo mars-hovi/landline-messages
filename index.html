@@ -371,6 +371,12 @@
       width: 32px;
       height: 32px;
     }
+    /* Playback pill only (.preview, added in enterPreview()) — every other
+       .anchor-box state (countdown/recording/error) keeps the shared base
+       padding (7px 13px). */
+    .anchor-box.preview {
+      padding: 6px 6px 6px 12px;
+    }
     #discardBtn {
       border-radius: 50%;
       background: #ececec;
@@ -533,11 +539,12 @@
     anchorBox.innerHTML = html;
     anchorBox.classList.toggle("error", !!isError);
     anchorBox.classList.toggle("countdown", !!isCountdown);
+    anchorBox.classList.remove("preview");
     anchorBox.classList.add("show");
     fitAnchorOneLine();
   }
   function hideAnchor() {
-    anchorBox.classList.remove("show", "countdown");
+    anchorBox.classList.remove("show", "countdown", "preview");
     anchorBox.innerHTML = "";
     anchorBox.style.fontSize = "";
   }
@@ -703,7 +710,7 @@
       </div>
     `;
     anchorBox.classList.remove("error", "countdown");
-    anchorBox.classList.add("show");
+    anchorBox.classList.add("show", "preview");
 
     const playBtn = document.getElementById("playBtn");
     const scrub = document.getElementById("scrub");
