@@ -83,8 +83,8 @@
   }
 
   /* --- Mobile layout: illustration is full-bleed — 100vw wide, no crop
-     (no object-fit, just the artwork's own 590:1041 ratio via height:auto,
-     so height = 100vw * 1041/590 = 176.4407vw), anchored flush to the
+     (no object-fit, just the artwork's own 590:845 ratio via height:auto,
+     so height = 100vw * 845/590 = 143.0991vw), anchored flush to the
      viewport bottom, no margin on any side. Note: --mobile-edge-gap (the
      "center everything on a larger screen" cap) intentionally does NOT
      apply here — the image stays edge-to-edge at any width, since a
@@ -99,7 +99,7 @@
       /* Vertical center of .hit-area (top + height/2), reused below to
          vertically align the tap pill with the phone regardless of where
          on the phone the user actually tapped. */
-      --phone-center-y: calc(100vh - 85.8472vw);
+      --phone-center-y: calc(100vh - 52.3242vw);
     }
     .phone-img {
       top: auto;
@@ -110,10 +110,10 @@
       height: auto;
     }
     .hit-area {
-      left: 28.17vw;
-      top: calc(100vh - 113.3631vw);
-      width: 64.68vw;
-      height: 55.0318vw;
+      left: 28.12vw;
+      top: calc(100vh - 79.234vw);
+      width: 64.74vw;
+      height: 53.8196vw;
     }
   }
 
