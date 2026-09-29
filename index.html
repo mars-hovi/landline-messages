@@ -197,17 +197,10 @@
 
   /* Playback pill only (.preview, added in enterPreview()) — every other
      .anchor-box state (countdown/recording/error) keeps the base padding
-     (7px 13px, above) since it's a different content shape. Verified in
-     the browser that top/right/bottom at a literal 6px each is genuinely
-     concentric with sendBtn's circle (same center point, radius difference
-     = 6px in every direction) — but it still doesn't *read* as even,
-     because the top/bottom gaps sit against the pill's flat edges while
-     the right gap sits against its curved rounded-cap edge, and a curve
-     reads as more space than a straight edge at the same literal distance.
-     Right is pulled in to 4px as an optical correction so it looks like it
-     matches the true 6px top/bottom, rather than actually equaling it. */
+     (7px 13px, above) since it's a different content shape. Literal 6px
+     top/right/bottom, 12px left. */
   .anchor-box.preview {
-    padding: 6px 4px 6px 12px;
+    padding: 6px 6px 6px 12px;
   }
 
   /* Countdown state is distinguished from "live" only by the lighter red
