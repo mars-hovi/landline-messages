@@ -467,7 +467,7 @@
   ringEars.src = isDesktopLayout ? "phone-ears-desktop.png" : "phone-ears-mobile.png";
   ringBase.src = isDesktopLayout ? "phone-base-desktop.png" : "phone-base-mobile.png";
   ringHand.src = isDesktopLayout ? "phone-handset-desktop.png" : "phone-handset-mobile.png";
-  ringHand.style.setProperty("--ring-pivot", isDesktopLayout ? "48% 49.8%" : "58% 60.9%");
+  ringHand.style.setProperty("--ring-pivot", isDesktopLayout ? "48% 49.8%" : "50.8% 60.9%");
   // delayMs > 0 = stay still for that long first (used after a hang-up so the
   // phone doesn't start ringing the instant the flow ends). Any later call
   // cancels a pending start, so hovering or starting a recording can't be
@@ -484,8 +484,7 @@
     }
     document.body.classList.toggle("ringing", on);
   }
-  const RING_RESTART_DELAY = 3000;
-  let firstIdle = true; // the very first goIdle() is page load: ring right away
+  const RING_START_DELAY = 3000; // still for 3s before every ring: page open, after a hang-up, after moving off the phone
   const cursorTip = document.getElementById("cursorTip");
   const anchorBox = document.getElementById("anchorBox");
   const previewAudio = document.getElementById("previewAudio");
@@ -569,7 +568,7 @@
     });
     phoneWrap.addEventListener("mouseleave", () => {
       cursorTip.classList.remove("show");
-      if (state === "idle") { phoneImg.src = imgIdle(); setRinging(true); }
+      if (state === "idle") { phoneImg.src = imgIdle(); setRinging(true, RING_START_DELAY); }
     });
   }
 
@@ -631,8 +630,7 @@
     clearTimeout(revertTimer);
     state = "idle";
     phoneImg.src = imgIdle();
-    setRinging(true, firstIdle ? 0 : RING_RESTART_DELAY);
-    firstIdle = false;
+    setRinging(true, RING_START_DELAY);
     hideAnchor();
     recordedBlob = null;
     previewAudio.pause();
