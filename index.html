@@ -97,13 +97,13 @@
   }
 
   /* Copy block — fixed pixel position per spec (does not scale with
-     viewport), Inter 16px, 500px-wide text column. Left margin matches
+     viewport), Inter 16px, 600px-wide text column. Left margin matches
      the top margin (150px) so the block is evenly inset from the corner. */
   .copy {
     position: fixed;
     top: 150px;
     left: 150px;
-    width: 500px;
+    width: 600px;
     max-width: calc(100vw - 300px);
     margin: 0;
     color: #2b2620;
@@ -111,6 +111,7 @@
     font-weight: 400;
     font-size: 16px;
     line-height: 1.5;
+    letter-spacing: -0.05em;
     pointer-events: none;
     z-index: 5;
   }
