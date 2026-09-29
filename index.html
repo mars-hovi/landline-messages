@@ -566,7 +566,7 @@
   // the real flow, minus any actual mic/MediaRecorder use.
   function beginDemoRecording() {
     state = "recording";
-    showAnchor('<span class="rec-dot blink"></span>click to hang up');
+    showAnchor('<span class="rec-dot blink"></span>click anywhere to hang up');
   }
 
   // TEMP (DEMO_MODE only): stands in for stopRecording() — builds a short
@@ -626,7 +626,7 @@
 
     mediaRecorder.start();
     state = "recording";
-    showAnchor('<span class="rec-dot blink"></span>click to hang up');
+    showAnchor('<span class="rec-dot blink"></span>click anywhere to hang up');
   }
 
   function stopRecording() {
