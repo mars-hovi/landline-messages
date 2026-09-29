@@ -18,13 +18,15 @@
        frame's intended height and read as oversized — min() caps it against
        vh too, so it always scales down to fit both dimensions at once. */
     --s: min(0.057870vw, 0.088979vh);
-    /* On a viewport wider than 1728px, this is the gap between the real
-       viewport edge and the edge of a virtual 1728px-wide centered canvas —
-       0 at 1728px and below. Both the desktop illustration (pinned to the
-       canvas's right edge) and the copy block (pinned to its left edge)
-       are offset by this so the whole composition stops sliding apart and
-       instead holds its 1728px-designed layout, centered, on wide screens. */
-    --edge-gap: max(0px, (100vw - 1728px) / 2);
+    /* On a viewport wider than 1512px (the user's own MacBook Pro window
+       width, confirmed via window.innerWidth — the layout they want used
+       as the reference), this is the gap between the real viewport edge
+       and the edge of a virtual 1512px-wide centered canvas — 0 at 1512px
+       and below. Both the desktop illustration (pinned to the canvas's
+       right edge) and the copy block (pinned to its left edge) are offset
+       by this so the whole composition stops sliding apart and instead
+       holds its 1512px-designed layout, centered, on wider screens. */
+    --edge-gap: max(0px, (100vw - 1512px) / 2);
   }
   * { box-sizing: border-box; }
   html, body {
