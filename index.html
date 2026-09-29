@@ -66,6 +66,46 @@
     display: block;
     position: fixed;
   }
+  /* EXPERIMENT — ringing: while the phone rests, the closed-phone art is
+     swapped for three stacked layers (the phone with its handset removed, the
+     handset on its own, and the phone's ears drawn in front of the handset,
+     as in the original art). The handset layer rocks a couple of degrees
+     side to side about the cradle, in two quick bursts — ring-ring ... pause —
+     without ever lifting off the dial. Hover / recording drop body.ringing
+     and the normal idle/hover artwork comes back. */
+  .phone-img.ring-layer { opacity: 0; pointer-events: none; }
+  body.ringing #phoneImg { opacity: 0; }
+  body.ringing .phone-img.ring-layer { opacity: 1; }
+  body.ringing .phone-img.ring-hand {
+    transform-origin: var(--ring-pivot, 48% 49.8%);
+    animation: handsetRock 4.83s linear infinite;
+  }
+  @keyframes handsetRock {
+    0.0% { transform: rotate(0deg); }
+    1.86% { transform: rotate(-1.6deg); }
+    3.73% { transform: rotate(1.6deg); }
+    5.59% { transform: rotate(-1.6deg); }
+    7.45% { transform: rotate(1.6deg); }
+    9.32% { transform: rotate(-1.6deg); }
+    11.18% { transform: rotate(1.6deg); }
+    13.04% { transform: rotate(-1.6deg); }
+    14.91% { transform: rotate(1.6deg); }
+    16.77% { transform: rotate(0deg); }
+    21.12% { transform: rotate(0deg); }
+    22.98% { transform: rotate(-1.6deg); }
+    24.84% { transform: rotate(1.6deg); }
+    26.71% { transform: rotate(-1.6deg); }
+    28.57% { transform: rotate(1.6deg); }
+    30.43% { transform: rotate(-1.6deg); }
+    32.3% { transform: rotate(1.6deg); }
+    34.16% { transform: rotate(-1.6deg); }
+    36.02% { transform: rotate(1.6deg); }
+    37.89% { transform: rotate(0deg); }
+    100% { transform: rotate(0deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body.ringing .phone-img.ring-hand { animation: none; }
+  }
   .hit-area {
     position: fixed;
     user-select: none;
@@ -379,6 +419,9 @@
 <body>
   <div class="phone-wrap">
     <img class="phone-img" id="phoneImg" src="phone-idle-desktop.png" alt="an illustrated red rotary phone on a side table">
+    <img class="phone-img ring-layer ring-base" id="ringBase" alt="" aria-hidden="true">
+    <img class="phone-img ring-layer ring-hand" id="ringHand" alt="" aria-hidden="true">
+    <img class="phone-img ring-layer ring-ears" id="ringEars" alt="" aria-hidden="true">
   </div>
   <div class="hit-area" id="phoneWrap"></div>
 
@@ -418,6 +461,14 @@
 
   const phoneWrap = document.getElementById("phoneWrap");
   const phoneImg = document.getElementById("phoneImg");
+  const ringBase = document.getElementById("ringBase");
+  const ringHand = document.getElementById("ringHand");
+  const ringEars = document.getElementById("ringEars");
+  ringEars.src = isDesktopLayout ? "phone-ears-desktop.png" : "phone-ears-mobile.png";
+  ringBase.src = isDesktopLayout ? "phone-base-desktop.png" : "phone-base-mobile.png";
+  ringHand.src = isDesktopLayout ? "phone-handset-desktop.png" : "phone-handset-mobile.png";
+  ringHand.style.setProperty("--ring-pivot", isDesktopLayout ? "48% 49.8%" : "58% 60.9%");
+  function setRinging(on) { document.body.classList.toggle("ringing", on); }
   const cursorTip = document.getElementById("cursorTip");
   const anchorBox = document.getElementById("anchorBox");
   const previewAudio = document.getElementById("previewAudio");
@@ -492,6 +543,7 @@
         if (moved < MOUSE_MOVE_THRESHOLD) return;
         frozenMouseX = null;
       }
+      setRinging(false);
       cursorTip.classList.add("show");
       cursorTip.style.transform = `translate(${e.clientX + ANCHOR_OFFSET}px, ${e.clientY + ANCHOR_OFFSET}px)`;
       // Same "handle up" artwork used while actively recording — hovering
@@ -500,7 +552,7 @@
     });
     phoneWrap.addEventListener("mouseleave", () => {
       cursorTip.classList.remove("show");
-      if (state === "idle") phoneImg.src = imgIdle();
+      if (state === "idle") { phoneImg.src = imgIdle(); setRinging(true); }
     });
   }
 
@@ -562,6 +614,7 @@
     clearTimeout(revertTimer);
     state = "idle";
     phoneImg.src = imgIdle();
+    setRinging(true);
     hideAnchor();
     recordedBlob = null;
     previewAudio.pause();
@@ -573,6 +626,7 @@
   function startFlow() {
     if (state !== "idle") return;
     hideCursorTip();
+    setRinging(false);
     phoneImg.src = imgActive();
     state = "countdown";
 
